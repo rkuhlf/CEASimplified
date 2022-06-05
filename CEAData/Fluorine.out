@@ -1,0 +1,121 @@
+
+ *******************************************************************************
+
+         NASA-GLENN CHEMICAL EQUILIBRIUM PROGRAM CEA2, MAY 21, 2004
+                   BY  BONNIE MCBRIDE AND SANFORD GORDON
+      REFS: NASA RP-1311, PART I, 1994 AND NASA RP-1311, PART II, 1996
+
+ *******************************************************************************
+
+
+
+ problem   case=C:/Users/riley/Documents/SchoolAssignments/CEA/new-CEA/CEAData/Fl
+ uorine o/f=3.2,
+     rocket  tcest,k=3800
+ p,psia=400.0,
+ sup,ae/at=1.0
+ react
+ fuel=H2 wt=1  t,f=70
+ oxid=F2 wt=1  t,f=70
+ end
+
+ OPTIONS: TP=F  HP=F  SP=F  TV=F  UV=F  SV=F  DETN=F  SHOCK=F  REFL=F  INCD=F
+ RKT=T  FROZ=F  EQL=F  IONS=F  SIUNIT=T  DEBUGF=F  SHKDBG=F  DETDBG=F  TRNSPT=F
+
+ TRACE= 0.00E+00  S/R= 0.000000E+00  H/R= 0.000000E+00  U/R= 0.000000E+00
+
+ Pc,BAR =    27.578922
+
+ Pc/P =
+
+ SUBSONIC AREA RATIOS =
+
+ SUPERSONIC AREA RATIOS =     1.0000
+
+ NFZ=  1  Mdot/Ac= 0.000000E+00  Ac/At= 0.000000E+00
+
+    REACTANT          WT.FRAC   (ENERGY/R),K   TEMP,K  DENSITY
+        EXPLODED FORMULA
+ F: H2               1.000000  -0.134809E+02   294.26  0.0000
+          H  2.00000
+ O: F2               1.000000  -0.146254E+02   294.26  0.0000
+          F  2.00000
+
+  SPECIES BEING CONSIDERED IN THIS SYSTEM
+ (CONDENSED PHASE MAY HAVE NAME LISTED SEVERAL TIMES)
+  LAST thermo.inp UPDATE:    9/09/04
+
+  g 5/97  *F               tpis89  F2               g 6/97  *H             
+  tpis89  *HF              tpis78  *H2              tpis89  H2F2           
+  tpis89  H3F3             tpis89  H4F4             tpis89  H5F5           
+  tpis89  H6F6             tpis89  H7F7           
+
+ O/F =   3.200000
+
+                       EFFECTIVE FUEL     EFFECTIVE OXIDANT        MIXTURE
+ ENTHALPY                  h(2)/R              h(1)/R               h0/R
+ (KG-MOL)(K)/KG       -0.66873745E+01     -0.38491041E+00     -0.18854971E+01
+
+ KG-FORM.WT./KG             bi(2)               bi(1)               b0i
+  *H                   0.99212255E+00      0.00000000E+00      0.23621965E+00
+  *F                   0.00000000E+00      0.52636003E-01      0.40103621E-01
+
+ POINT ITN      T            H           F 
+   1   12    2689.034      -8.748     -27.039
+
+
+
+
+
+           THEORETICAL ROCKET PERFORMANCE ASSUMING FROZEN COMPOSITION
+
+ Pin =   400.0 PSIA
+ CASE = C:/Users/riley/
+
+             REACTANT                    WT FRACTION      ENERGY      TEMP
+                                          (SEE NOTE)     KJ/KG-MOL      K  
+ FUEL        H2                           1.0000000      -112.087    294.261
+ OXIDANT     F2                           1.0000000      -121.603    294.261
+
+ O/F=    3.20000  %FUEL= 23.809524  R,EQ.RATIO= 5.890233  PHI,EQ.RATIO= 5.890233
+
+                 CHAMBER   THROAT     EXIT
+ Pinf/P            1.0000   1.8391   1.8391
+ P, BAR            27.579   14.996   14.996
+ T, K             2689.03  2332.42  2332.42
+ RHO, KG/CU M    8.8929-1 5.5748-1 5.5748-1
+ H, KJ/KG         -15.677 -1777.44 -1777.44
+ U, KJ/KG        -3116.89 -4467.38 -4467.38
+ G, KJ/KG        -70447.5 -62868.9 -62868.9
+ S, KJ/(KG)(K)    26.1922  26.1922  26.1922
+
+ M, (1/n)           7.209    7.209    7.209
+ Cp, KJ/(KG)(K)    5.0025   4.8744   4.8744
+ GAMMAs            1.2996   1.3099   1.3099
+ SON VEL,M/SEC     2007.6   1877.1   1877.1
+ MACH NUMBER        0.000    1.000    1.000
+
+ PERFORMANCE PARAMETERS
+
+ Ae/At                      1.0000   1.0000
+ CSTAR, M/SEC               2635.5   2635.5
+ CF                         0.7122   0.7122
+ Ivac, M/SEC                3310.1   3310.1
+ Isp, M/SEC                 1877.1   1877.1
+
+ MOLE FRACTIONS
+
+ *F              0.00001   *H              0.00871   *HF             0.28825
+ *H2             0.70259   H2F2            0.00043
+
+  * THERMODYNAMIC PROPERTIES FITTED TO 20000.K
+
+    PRODUCTS WHICH WERE CONSIDERED BUT WHOSE MOLE FRACTIONS
+    WERE LESS THAN 5.000000E-06 FOR ALL ASSIGNED CONDITIONS
+
+
+
+ NOTE. WEIGHT FRACTION OF FUEL IN TOTAL FUELS AND OF OXIDANT IN TOTAL OXIDANTS
+
+
+

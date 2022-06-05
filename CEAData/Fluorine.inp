@@ -1,0 +1,8 @@
+problem   case=C:/Users/riley/Documents/SchoolAssignments/CEA/new-CEA/CEAData/Fluorine o/f=3.2,
+    rocket  tcest,k=3800
+p,psia=400.0,
+sup,ae/at=1.0
+react
+fuel=H2 wt=1  t,f=70
+oxid=F2 wt=1  t,f=70
+end
