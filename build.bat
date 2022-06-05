@@ -1,12 +1,15 @@
-pyinstaller --onefile -w main.py
+pyinstaller --icon rocket.ico -F -w main.py
 
-copy rocket.ico dist\rocket.ico
+set originalPath=dist
 
-robocopy FCEA dist/FCEA /E
 
-robocopy CleanCEAData dist/CEAData /E
+copy rocket.ico %originalPath%\rocket.ico
 
-cd dist
+robocopy FCEA %originalPath%\FCEA /E
+
+robocopy CleanCEAData %originalPath%\CEAData /E
+
+cd %originalPath%
 
 rename main.exe CEASimplified.exe
 
@@ -14,4 +17,6 @@ cd ..
 
 rmdir ..\Builds\CEASimplified /S /Q
 
-move dist ..\Builds\CEASimplified
+move %originalPath% ..\Builds\CEASimplified
+
+@REM rmdir dist
