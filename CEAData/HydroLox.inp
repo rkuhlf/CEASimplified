@@ -1,0 +1,10 @@
+problem   case=C:/Users/riley/Documents/SchoolAssignments/CEA/new-CEA/CEAData/HydroLox o/f=5.0,
+    rocket  tcest,k=3800
+p,psia=400.0,
+sup,ae/at=4.0
+react
+fuel=customFuel wt=1  t,f=70
+    h,kj/mol=24.0  H 2.0 
+oxid=customOxidizer wt=1  t,f=70
+    h,kj/mol=15.0  O 2.0 
+end

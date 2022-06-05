@@ -1,0 +1,73 @@
+
+ *******************************************************************************
+
+         NASA-GLENN CHEMICAL EQUILIBRIUM PROGRAM CEA2, MAY 21, 2004
+                   BY  BONNIE MCBRIDE AND SANFORD GORDON
+      REFS: NASA RP-1311, PART I, 1994 AND NASA RP-1311, PART II, 1996
+
+ *******************************************************************************
+
+
+
+ problem   case=testFile o/f=6.5,
+     rocket  tcest,k=3800
+ p,psia=320.0,
+ sup,ae/at=3.0
+ react
+ oxid=customFuel wt=1  t,f=70
+     h,kj/mol=43.0  N 3.0
+ oxid=customOxidizer wt=1  t,f=70
+     h,kj/mol=2.0  Li 2.0
+ end
+
+ OPTIONS: TP=F  HP=F  SP=F  TV=F  UV=F  SV=F  DETN=F  SHOCK=F  REFL=F  INCD=F
+ RKT=T  FROZ=F  EQL=F  IONS=F  SIUNIT=T  DEBUGF=F  SHKDBG=F  DETDBG=F  TRNSPT=F
+
+ TRACE= 0.00E+00  S/R= 0.000000E+00  H/R= 0.000000E+00  U/R= 0.000000E+00
+
+ Pc,BAR =    22.063137
+
+ Pc/P =
+
+ SUBSONIC AREA RATIOS =
+
+ SUPERSONIC AREA RATIOS =     3.0000
+
+ NFZ=  1  Mdot/Ac= 0.000000E+00  Ac/At= 0.000000E+00
+
+    REACTANT          WT.FRAC   (ENERGY/R),K   TEMP,K  DENSITY
+        EXPLODED FORMULA
+  : customFuel       0.500000   0.517168E+04   294.26  0.0000
+          N  3.00000
+  : customOxidizer   0.500000   0.240543E+03   294.26  0.0000
+          LI 2.00000
+
+  SPECIES BEING CONSIDERED IN THIS SYSTEM
+ (CONDENSED PHASE MAY HAVE NAME LISTED SEVERAL TIMES)
+  LAST thermo.inp UPDATE:    9/09/04
+
+  g 7/97  *Li              j12/66  LiN              j12/83  Li2            
+  g 5/97  *N               tpis78  *N2              tpis89  N3             
+  tpis82  Li(cr)           tpis82  Li(cr)           tpis82  Li(L)          
+  j 3/78  Li3N(cr)         j 3/78  Li3N(cr)       
+
+ O/F =   6.500000
+
+                       EFFECTIVE FUEL     EFFECTIVE OXIDANT        MIXTURE
+ ENTHALPY                  h(2)/R              h(1)/R               h0/R
+ (KG-MOL)(K)/KG        0.70202047E+02      0.14040409E+03      0.13104382E+03
+
+ KG-FORM.WT./KG             bi(2)               bi(1)               b0i
+  *N                   0.35697202E-01      0.71394404E-01      0.66634777E-01
+  *Li                  0.72035730E-01      0.14407146E+00      0.13446670E+00
+
+ POINT ITN      T            N           LI
+   1   27       0.730  -10039.293   14343.629
+
+ LOW TEMPERATURE IMPLIES A CONDENSED SPECIES SHOULD HAVE BEEN INSERTED,
+ RESTART WITH insert DATASET (EQLBRM)
+
+ CALCULATIONS STOPPED AFTER POINT  0(EQLBRM)
+
+
+
