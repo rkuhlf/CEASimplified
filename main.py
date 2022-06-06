@@ -2,6 +2,7 @@
 # TODO: Make unit conversion dropdowns everywhere, include a list of the units and their conversion factors in the parameters
 # TODO: add an asterisk to the title bar if you have not saved your most recent change (probably will be sucky)
 # TODO: figure out why increasing the area ratio always gives a better Isp
+# TODO: install UPX so that pyinstaller can compress .exe files
 
 import os
 import re
@@ -519,7 +520,7 @@ class Main(tk.Frame):
 
         run_menu = tk.Menu(menu, tearoff=0)
         menu.add_cascade(label="Run", menu=run_menu, underline=0)
-        run_menu.add_command(label="Run CEA", command=self.new_file, underline=0, accelerator="<Enter>")
+        run_menu.add_command(label="Run CEA", command=self.run_file, underline=0, accelerator="<Enter>")
         # TODO: add buttons to optimize various things
 
         help_menu = tk.Menu(menu, tearoff=0)
