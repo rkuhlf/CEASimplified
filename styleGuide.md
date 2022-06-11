@@ -12,6 +12,3 @@ Make the input boxes look a touch more modern
 INcrease margin on prop select titles
 
 <!-- Also convert output pressure units to psia -->
-
-add about a pixel between all of the output columns
-Move units to the right of the number where there is only one input

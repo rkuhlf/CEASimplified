@@ -10,13 +10,13 @@
 
 
  problem   case=C:/Users/riley/Documents/SchoolAssignments/CEA/CEASimplified/CEAD
- ata/Fluorine o/f=3.2,
+ ata/HydroLox.inp o/f=2.4,
      rocket  tcest,k=3800
  p,psia=400.0,
- sup,ae/at=2.0
+ sup,ae/at=1.0
  react
  fuel=H2 wt=1  t,f=70
- oxid=F2 wt=1  t,f=70
+ oxid=O2 wt=1  t,f=70
  end
 
  OPTIONS: TP=F  HP=F  SP=F  TV=F  UV=F  SV=F  DETN=F  SHOCK=F  REFL=F  INCD=F
@@ -30,7 +30,7 @@
 
  SUBSONIC AREA RATIOS =
 
- SUPERSONIC AREA RATIOS =     2.0000
+ SUPERSONIC AREA RATIOS =     1.0000
 
  NFZ=  1  Mdot/Ac= 0.000000E+00  Ac/At= 0.000000E+00
 
@@ -38,30 +38,30 @@
         EXPLODED FORMULA
  F: H2               1.000000  -0.134809E+02   294.26  0.0000
           H  2.00000
- O: F2               1.000000  -0.146254E+02   294.26  0.0000
-          F  2.00000
+ O: O2               1.000000  -0.137365E+02   294.26  0.0000
+          O  2.00000
 
   SPECIES BEING CONSIDERED IN THIS SYSTEM
  (CONDENSED PHASE MAY HAVE NAME LISTED SEVERAL TIMES)
   LAST thermo.inp UPDATE:    9/09/04
 
-  g 5/97  *F               tpis89  F2               g 6/97  *H             
-  tpis89  *HF              tpis78  *H2              tpis89  H2F2           
-  tpis89  H3F3             tpis89  H4F4             tpis89  H5F5           
-  tpis89  H6F6             tpis89  H7F7           
+  g 6/97  *H               g 4/02  HO2              tpis78  *H2            
+  g 8/89  H2O              g 6/99  H2O2             g 5/97  *O             
+  g 4/02  *OH              tpis89  *O2              g 8/01  O3             
+  g11/99  H2O(cr)          g 8/01  H2O(L)           g 8/01  H2O(L)         
 
- O/F =   3.200000
+ O/F =   2.400000
 
                        EFFECTIVE FUEL     EFFECTIVE OXIDANT        MIXTURE
  ENTHALPY                  h(2)/R              h(1)/R               h0/R
- (KG-MOL)(K)/KG       -0.66873745E+01     -0.38491041E+00     -0.18854971E+01
+ (KG-MOL)(K)/KG       -0.66873745E+01     -0.42928323E+00     -0.22698983E+01
 
  KG-FORM.WT./KG             bi(2)               bi(1)               b0i
-  *H                   0.99212255E+00      0.00000000E+00      0.23621965E+00
-  *F                   0.00000000E+00      0.52636003E-01      0.40103621E-01
+  *H                   0.99212255E+00      0.00000000E+00      0.29180075E+00
+  *O                   0.00000000E+00      0.62502344E-01      0.44119302E-01
 
- POINT ITN      T            H           F 
-   1   12    2689.034      -8.748     -27.039
+ POINT ITN      T            H           O 
+   1    9    2335.245      -8.514     -21.480
 
 
 
@@ -75,38 +75,38 @@
              REACTANT                    WT FRACTION      ENERGY      TEMP
                                           (SEE NOTE)     KJ/KG-MOL      K  
  FUEL        H2                           1.0000000      -112.087    294.261
- OXIDANT     F2                           1.0000000      -121.603    294.261
+ OXIDANT     O2                           1.0000000      -114.213    294.261
 
- O/F=    3.20000  %FUEL= 23.809524  R,EQ.RATIO= 5.890233  PHI,EQ.RATIO= 5.890233
+ O/F=    2.40000  %FUEL= 29.411765  R,EQ.RATIO= 3.306951  PHI,EQ.RATIO= 3.306951
 
                  CHAMBER   THROAT     EXIT
- Pinf/P            1.0000   1.8391   9.7607
- P, BAR            27.579   14.996   2.8255
- T, K             2689.03  2332.42  1546.42
- RHO, KG/CU M    8.8929-1 5.5748-1 1.5843-1
- H, KJ/KG         -15.677 -1777.44 -5469.28
- U, KJ/KG        -3116.89 -4467.38 -7252.74
- G, KJ/KG        -70447.5 -62868.9 -45973.6
- S, KJ/(KG)(K)    26.1922  26.1922  26.1922
+ Pinf/P            1.0000   1.8110   1.8110
+ P, BAR            27.579   15.228   15.228
+ T, K             2335.25  2066.49  2066.49
+ RHO, KG/CU M    9.7256-1 6.0686-1 6.0686-1
+ H, KJ/KG         -18.873 -1604.54 -1604.54
+ U, KJ/KG        -2854.56 -4113.88 -4113.88
+ G, KJ/KG        -66636.4 -60555.3 -60555.3
+ S, KJ/(KG)(K)    28.5270  28.5270  28.5270
 
- M, (1/n)           7.209    7.209    7.209
- Cp, KJ/(KG)(K)    5.0025   4.8744   4.4945
- GAMMAs            1.2996   1.3099   1.3452
- SON VEL,M/SEC     2007.6   1877.1   1548.9
- MACH NUMBER        0.000    1.000    2.132
+ M, (1/n)           6.847    6.847    6.847
+ Cp, KJ/(KG)(K)    5.9783   5.8173   5.8173
+ GAMMAs            1.2549   1.2638   1.2638
+ SON VEL,M/SEC     1886.4   1780.8   1780.8
+ MACH NUMBER        0.000    1.000    1.000
 
  PERFORMANCE PARAMETERS
 
- Ae/At                      1.0000   2.0000
- CSTAR, M/SEC               2635.5   2635.5
- CF                         0.7122   1.2531
- Ivac, M/SEC                3310.1   3842.6
- Isp, M/SEC                 1877.1   3302.6
+ Ae/At                      1.0000   1.0000
+ CSTAR, M/SEC               2551.9   2551.9
+ CF                         0.6978   0.6978
+ Ivac, M/SEC                3189.9   3189.9
+ Isp, M/SEC                 1780.8   1780.8
 
  MOLE FRACTIONS
 
- *F              0.00001   *H              0.00871   *HF             0.28825
- *H2             0.70259   H2F2            0.00043
+ *H              0.00184   *H2             0.69606   H2O             0.30194
+ *OH             0.00015
 
   * THERMODYNAMIC PROPERTIES FITTED TO 20000.K
 

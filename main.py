@@ -1,8 +1,9 @@
-# TODO: Deploy to Github and SourceForge, add a link in the notes for future Goddard
+
+# TODO: add an explanation of heat of formation. Focus on how to calculate.
 # TODO: Make unit conversion dropdowns everywhere, include a list of the units and their conversion factors in the parameters
+# TODO: Improve units. I do not think that it is necessary to remember the unit selections within a file, but it would be good for the software as a whole to remember the default selections from some kind of json file in memory
 # TODO: add an asterisk to the title bar if you have not saved your most recent change (probably will be sucky)
 # TODO: figure out why increasing the area ratio always gives a better Isp
-# TODO: install UPX so that pyinstaller can compress .exe files
 
 import os
 import re
@@ -12,7 +13,7 @@ import tkinter as tk
 from tkinter import filedialog as fd
 from tkinter import CENTER, LEFT, RIGHT, ttk
 from tkinter import messagebox
-from HelpWindow import AREA_RATIO_MESSAGE, AREA_RATIO_WINDOW, CEA_WINDOW, CF_MESSAGE, CF_WINDOW, CSTAR_MESSAGE, CSTAR_WINDOW, FUEL_MESSAGE, FUEL_WINDOW, ISP_MESSAGE, ISP_WINDOW, OF_MESSAGE, OF_WINDOW, OXIDIZER_MESSAGE, OXIDIZER_WINDOW, PRESSURE_MESSAGE, PRESSURE_WINDOW, helpWindow, GENERAL_CEA_MESSAGE
+from HelpWindow import AREA_RATIO_WINDOW, CEA_WINDOW, CF_WINDOW, CSTAR_WINDOW, FUEL_WINDOW, ISP_WINDOW, OF_WINDOW, OXIDIZER_WINDOW, PRESSURE_WINDOW
 from PropellantSelect import CompoundSelect
 import os.path
 
@@ -23,7 +24,7 @@ from typing import List
 from Exceptions import PresetException, UnknownCEAException, UserInputException
 
 from compound import CustomCompound, PresetCompound
-from helperWidgets import LabeledInput, LabeledOutput, help_button
+from helperWidgets import LabeledInput, LabeledInputWithUnits, LabeledOutput, LabeledOutputWithUnits, NumericalEntryWithUnits, help_button
 import images
 
 data_folder = "./CEAData"
@@ -67,13 +68,16 @@ class Inputs(tk.Frame):
 
         # TODO: Add an optimize button next to it. Also requires decoupling the simulation code. And making it a grid layout
         # Use 🗲 as icon
-        self.OF_input = LabeledInput(text_inputs, "O/F (): ", numerical=True, uniform="main", help_func=OF_WINDOW)
+        self.OF_input = LabeledInput(text_inputs, "O/F: ", numerical=True, uniform="main", help_func=OF_WINDOW)
         self.OF_input.pack()
 
-        self.pressure_input = LabeledInput(text_inputs, "Pressure (psia): ", numerical=True, uniform="main", help_func=PRESSURE_WINDOW)
+        self.pressure_input = LabeledInputWithUnits(text_inputs, "Pressure: ", unit_conversions={
+            "psia": 1,
+            "Pa": 6894.75729
+        }, uniform="main", help_func=PRESSURE_WINDOW)
         self.pressure_input.pack()
 
-        self.area_ratio_input = LabeledInput(text_inputs, "Area Ratio (): ", numerical=True, uniform="main", help_func=AREA_RATIO_WINDOW)
+        self.area_ratio_input = LabeledInput(text_inputs, "Area Ratio: ", numerical=True, uniform="main", help_func=AREA_RATIO_WINDOW)
         self.area_ratio_input.pack()
 
         sep = ttk.Separator(self, orient=tk.HORIZONTAL)
@@ -167,7 +171,7 @@ class Outputs(tk.Frame):
         self.conditions.pack()
 
         row_title_offset = 5
-        self.pack_row(self.conditions, ["Chamber", "Throat", "Exit"], start_col=1, sticky="e", pady=(0, 5))
+        self.pack_row(self.conditions, [" Chamber ", " Throat ", " Exit "], start_col=1, sticky="e", pady=(0, 5), padx=3)
         self.pack_row(self.conditions, ["Pressure (atm)"], start_col=0, row=1, sticky="w", padx=row_title_offset)
         self.pack_row(self.conditions, ["Temperature (°C)"], start_col=0, row=2, sticky="w", padx=row_title_offset)
         self.pack_row(self.conditions, ["Density (kg/m^3)"], start_col=0, row=3, sticky="w", padx=row_title_offset)
@@ -188,16 +192,16 @@ class Outputs(tk.Frame):
             temperature = round_str(new_outputs["temperature"], 0)
             density = round_str(new_outputs["density"], 4)
             mach = round_str(new_outputs["mach"], 2)
-            self.pack_row(self.conditions, pressures, start_col=1, row=1, sticky="e")
-            self.pack_row(self.conditions, temperature, start_col=1, row=2, sticky="e")
-            self.pack_row(self.conditions, density, start_col=1, row=3, sticky="e")
-            self.pack_row(self.conditions, mach, start_col=1, row=4, sticky="e")
-            self.pack_row(self.conditions, velocities, start_col=1, row=5, sticky="e")
+            self.pack_row(self.conditions, pressures, start_col=1, row=1, sticky="e", padx=5)
+            self.pack_row(self.conditions, temperature, start_col=1, row=2, sticky="e", padx=5)
+            self.pack_row(self.conditions, density, start_col=1, row=3, sticky="e", padx=5)
+            self.pack_row(self.conditions, mach, start_col=1, row=4, sticky="e", padx=5)
+            self.pack_row(self.conditions, velocities, start_col=1, row=5, sticky="e", padx=5)
 
     def update_display(self, new_outputs):
-        self.cstar_display.update_value(str(round(float(new_outputs["cstar"]))))
-        self.CF_display.update_value(str(round(float(new_outputs["CF"]), 3)))
-        self.Isp_display.update_value(str(round(float(new_outputs["Isp"]))))
+        self.cstar_display.update_value(new_outputs["cstar"], "m/s")
+        self.CF_display.update_value(new_outputs["CF"])
+        self.Isp_display.update_value(new_outputs["Isp"], "s")
 
         self.conditions.destroy()
         self.pack_conditions(new_outputs)
@@ -212,12 +216,19 @@ class Outputs(tk.Frame):
         performance = tk.Frame(self)
         performance.pack()
 
-        self.cstar_display = LabeledOutput(performance, prefix="Characteristic Velocity (m/s): ", help_func=CSTAR_WINDOW, uniform="outputs")
+        self.cstar_display = LabeledOutputWithUnits(performance, prefix="Characteristic Velocity: ", help_func=CSTAR_WINDOW, uniform="outputs", unit_conversions={
+            "m/s": 1,
+            "ft/s": 3.28084
+        }, precision=4)
         self.cstar_display.pack()
-        self.CF_display = LabeledOutput(performance, prefix="Nozzle Coefficient (): ", help_func=CF_WINDOW, uniform="outputs")
+        self.CF_display = LabeledOutput(performance, prefix="Nozzle Coefficient: ", help_func=CF_WINDOW, uniform="outputs", precision=3, numerical=True)
         self.CF_display.pack()
 
-        self.Isp_display = LabeledOutput(performance, prefix="Specific Impulse (s): ", help_func=ISP_WINDOW, uniform="outputs")
+        self.Isp_display = LabeledOutputWithUnits(performance, prefix="Specific Impulse: ", help_func=ISP_WINDOW, uniform="outputs", unit_conversions={
+            "s": 1,
+            "Ns/kg": 9.81,
+            # TODO: figure out what this is in imperial
+        }, precision=3)
         self.Isp_display.pack()
 
 
@@ -536,6 +547,8 @@ class Main(tk.Frame):
         help_menu.add_command(label="C*", command=CSTAR_WINDOW)
         help_menu.add_command(label="CF", command=CF_WINDOW)
         help_menu.add_command(label="Isp", command=ISP_WINDOW)
+
+        # Add some units options in another dropdown here; maybe have some set everything imperial and metric functions. Would kind of suck because I have to make sure that everything that is already put in gets converted correctly
         
     
     def set_current_file(self, new_path: str):

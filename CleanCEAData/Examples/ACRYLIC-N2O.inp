@@ -1,0 +1,9 @@
+problem   case=rocketacrylicn2o o/f=6.5,
+    rocket  tcest,k=3800
+  p,psia=425,
+  sup,ae/at=5,10,
+react  
+  oxid=N2O wt=1  t,f=70  
+  fuel=acrylic  wt=1  t,f=70  
+    h,kj/mol=100  C 5 H 8 O 2 
+end

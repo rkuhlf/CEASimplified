@@ -1,0 +1,10 @@
+problem   case=rocket1 o/f=6.5,
+#info preceded by "#" are not used and so notes may be made.
+    rocket  tcest,k=3800
+  p,psia=425,
+  sup,ae/at=5,10,15
+react  
+  oxid=N2O wt=2  t,f=70  
+  fuel=HTPB  wt=1  t,f=70  
+    h,kj/mol=51.88  C 200 H 302 O 2 
+end
