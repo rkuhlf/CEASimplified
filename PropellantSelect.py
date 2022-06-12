@@ -1,14 +1,42 @@
 import tkinter as tk
-from typing import List
+from turtle import width
+from typing import Dict, List
+import typing
 
-from ElementDropDown import ElementDropDown, SearchableDropdown, elements
+from elements import Element, NonExistentElementException, element_names, elements, get_element_by_name
+from ElementDropDown import ElementDropDown, SearchableDropdown
 from Exceptions import PresetException, UserInputException
-from helperWidgets import LabeledInput, help_button
+from helperWidgets import LabeledInput, NumericalEntry, NumericalEntryWithUnits, help_button
 from fonts import title_font, subtitle_font
 
 
+class MolarMassMultiplier:
+    def __init__(self, multiplier=1, power=1) -> None:
+        self.multiplier = multiplier
+        self.power = power
+    
+    def calculate_multiplier(self, elements: Dict[Element, float]) -> float:
+        """Takes a dictionary of elements and returns the molar mass raised to the power specified on initialization"""
+        total = 0
+        for element, amount in elements.items():
+            total += element.molar_mass * amount
+        
+        return self.multiplier * total ** self.power
 
+class InputMolarMassUnits(NumericalEntryWithUnits):
+    @property
+    def base_value(self) -> float:
+        raise Exception("Cannot get the base value of units that include molar mass without knowing the element breakdown. Use get_base_value instead")
 
+    def get_base_value(self, elements: Dict[Element, str]):
+        conversion = self.unit_conversions.get(self.units)
+        
+        if isinstance(conversion, MolarMassMultiplier):
+            conversion = conversion.calculate_multiplier(elements)
+        print(conversion)
+        return float(self.value) / conversion
+    
+    
 
 class ElementDictionaryPair(tk.Frame):
     def __init__(self, parent, delete_function, id: int, element="", amount="") -> None:
@@ -24,24 +52,24 @@ class ElementDictionaryPair(tk.Frame):
         self.element_input.element = element
         self.element_input.pack(side=tk.LEFT)
 
-        self.amount_input = tk.Entry(self.input_frame)
+        self.amount_input = NumericalEntry(self.input_frame, width=8)
         self.amount_input.delete(0, tk.END)
         self.amount_input.insert(0, amount)
         self.amount_input.pack(side=tk.RIGHT)
 
         # At some point I just do not understand how self works in python
         self.delete_button = tk.Button(self, text="×", command=lambda : self.delete_function(self.id))
+        self.delete_button.bind("<Button-1>", lambda *args : self.event_generate("<<Document-Altered>>"))
         self.delete_button.pack(side=tk.RIGHT)
     
     @property
     def element(self):
         to_return = self.element_input.element
-        if to_return in elements:
+        if to_return in element_names:
             return to_return
         else:
             raise UserInputException("Please select an element from the dropdown for every input.")
         
-    
     @property
     def amount(self):
         try:
@@ -94,10 +122,10 @@ class ElementDictionaryInput(tk.Frame):
         self.add_button.pack()
 
     @property
-    def elements(self):
+    def elements(self) -> dict:
         ans = dict()
         for pair in self.pair_list.pairs:
-            ans[pair.element] = pair.amount
+            ans[get_element_by_name(pair.element)] = pair.amount
         
         return ans
     
@@ -109,10 +137,10 @@ class ElementDictionaryInput(tk.Frame):
         # Input the new elements
         for key, amount in new_elements.items():
             # Check if element is a symbol in the list of elements
-            for full_element in elements:
+            for element in elements:
                 # Check if they only put the symbol in
-                if f"({key})" in full_element:
-                    key = full_element
+                if key == element.symbol:
+                    key = element.full_name
                     break
             
             self.pair_list.add_pair(key, amount)
@@ -124,8 +152,17 @@ class CompoundSelect(tk.Frame):
         self.custom_frame = tk.Frame(self)
         self.custom_frame.pack()
 
-        self.formation_heat_input = LabeledInput(self.custom_frame, "Heat of Formation (kj/mol): ", numerical=True)
-        self.formation_heat_input.pack()
+        heat_frame = tk.Frame(self.custom_frame)
+        heat_frame.pack()
+        tk.Label(heat_frame, text="Heat of Formation: ").pack(side=tk.LEFT)
+        self.formation_heat_input = InputMolarMassUnits(heat_frame, unit_conversions={
+            "kJ/mol": 1,
+            # Because we want to divide by the molar mass, we use a negative one for the power
+            # Converting 1000 grams to one kilogram is multiplication by 1000
+            "kJ/kg": MolarMassMultiplier(multiplier=1000, power=-1)
+            }, precision=None, change_on_update=False, width=8)
+
+        self.formation_heat_input.pack(side=tk.LEFT)
 
         self.composition_input = ElementDictionaryInput(self.custom_frame)
         self.composition_input.pack()
@@ -202,8 +239,12 @@ class CompoundSelect(tk.Frame):
     def formation_heat(self):
         if self.is_custom:
             try:
-                return float(self.formation_heat_input.value)
-            except:
+                return float(self.formation_heat_input.get_base_value(self.elements))
+            except NonExistentElementException as e:
+                print(e)
+                raise UserInputException("Select an element from the listed options.")
+            except ValueError as e:
+                print(e)
                 raise UserInputException("Input a number for heat of formation.")
         
         raise Exception("Attempting to access heat of formation from a preset.")

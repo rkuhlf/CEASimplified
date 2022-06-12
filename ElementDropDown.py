@@ -4,6 +4,7 @@
 import tkinter as tk
 from tkinter import ttk
 from typing import List
+from elements import element_names
 
 
 class SearchableDropdown(tk.Frame):
@@ -26,7 +27,9 @@ class SearchableDropdown(tk.Frame):
 
         self.items = items
 
-        self.combo_box = ttk.Combobox(self)
+        self.text_variable = tk.StringVar()
+        self.text_variable.trace("w", lambda a, b, c : self.event_generate("<<Document-Altered>>"))
+        self.combo_box = ttk.Combobox(self, textvariable=self.text_variable)
         self.combo_box['values'] = items
         self.combo_box.bind('<KeyRelease>', self.check_input)
         self.combo_box.pack()
@@ -40,75 +43,18 @@ class SearchableDropdown(tk.Frame):
         self.combo_box.set(v)
 
 
-# TODO: go through and delete all of the ones that CEA rejects
-elements = [
-    "Hydrogen (H)",
-    "Helium (He)",
-    "Lithium (Li)",
-    "Beryllium (Be)",
-    "Boron (B)",
-    "Carbon (C)",
-    "Nitrogen (N)",
-    "Oxygen (O)",
-    "Fluorine (F)",
-    "Neon (Ne)",
-    "Sodium (Na)",
-    "Magnesium (Mg)",
-    "Aluminium (Al)",
-    "Silicon (Si)",
-    "Phosphorus (P)",
-    "Sulfur (S)",
-    "Chlorine (Cl)",
-    "Argon (Ar)",
-    "Potassium (K)",
-    "Calcium (Ca)",
-    "Scandium (Sc)",
-    "Titanium (Ti)",
-    "Vanadium (V)",
-    "Chromium (Cr)",
-    "Manganese (Mn)",
-    "Iron (Fe)",
-    "Cobalt (Co)",
-    "Nickel (Ni)",
-    "Copper (Cu)",
-    "Zinc (Zn)",
-    "Gallium (Ga)",
-    "Germanium (Ge)",
-    "Bromine (Br)",
-    "Krypton (Kr)",
-    "Rubidium (Rb)",
-    "Strontium (Sr)",
-    "Zirconium (Zr)",
-    "Niobium (Nb)",
-    "Molybdenum (Mo)",
-    "Silver (Ag)",
-    "Cadmium (Cd)",
-    "Indium (In)",
-    "Tin (Sn)",
-    "Iodine (I)",
-    "Xenon (Xe)",
-    "Cesium (Cs)",
-    "Barium (Ba)",
-    "Tantalum (Ta)",
-    "Tungsten (W)",
-    "Lead (Pb)",
-    "Radon (Rn)",
-    "Thorium (Th)",
-    "Uranium (U)",
-]
-
 class ElementDropDown(tk.Frame):
     def __init__(self, parent):
         super(ElementDropDown, self).__init__(parent)
 
-        self.elementDropDown = SearchableDropdown(self, elements)
+        self.elementDropDown = SearchableDropdown(self, element_names)
         self.elementDropDown.pack()
 
     @property
     def element(self) -> str:
         current: str = self.elementDropDown.value
         
-        if current in elements:
+        if current in element_names:
             return current
 
         return ""
@@ -116,3 +62,5 @@ class ElementDropDown(tk.Frame):
     @element.setter
     def element(self, new_element) -> None:
         self.elementDropDown.value = new_element
+
+        self.event_generate("<<Document-Altered>>")

@@ -1,5 +1,8 @@
 import tkinter as tk
 from tkinter import ttk
+from typing import Dict
+
+from matplotlib.pyplot import text
 from toPrecision import std_notation
 
 from images import images
@@ -29,6 +32,11 @@ class NumericalEntry(tk.Entry):
                 '%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
         
         self.precision = precision
+        if "textvariable" not in kwargs.keys():
+            self.text_variable = tk.StringVar()
+            kwargs["textvariable"] = self.text_variable
+        kwargs["textvariable"].trace("w", lambda a, b, c : self.event_generate("<<Document-Altered>>"))
+        
         tk.Entry.__init__(self, parent, *args, validate = 'key', validatecommand=vcmd, **kwargs)
         self.parent = parent
 
@@ -38,14 +46,14 @@ class NumericalEntry(tk.Entry):
     
     def insert(self, index: int, string: str) -> None:
         if validate_to_float(string, empty=False):
-            # TODO: make the precision more optional so that inputs cannot have 10 digits of accuracy
             if self.precision != None:
                 string = std_notation(float(string), self.precision)
-
+        
+        
         return super().insert(index, string)
 
 class NumericalEntryWithUnits(tk.Frame):
-    def __init__(self, parent, unit_conversions: dict={}, precision=2, change_on_update=True, **kwargs) -> None:
+    def __init__(self, parent, unit_conversions: Dict[str, float]={}, precision=2, change_on_update=True, **kwargs) -> None:
         """Additional keyword arguments are passed to the entry. If no units are passed, it will create an empty dropdown"""
         self.precision = precision
         super().__init__(parent, **kwargs)
@@ -70,14 +78,18 @@ class NumericalEntryWithUnits(tk.Frame):
     
     @value.setter
     def value(self, v: str):
-        # Not working for some reason; is no longer disabled while setting
-        if v != "":
-            v = std_notation(float(v), self.precision)
+        # The text variable technique works even if it is set as read-only
+        if self.precision is not None:
+            if v != "":
+                v = std_notation(float(v), self.precision)
+        
         self.text_variable.set(v)
+
+        self.event_generate("<<Document-Altered>>")
         
     @property
-    def base_value(self):
-        return self.value / self.unit_conversions.get(self.units)
+    def base_value(self) -> float:
+        return float(self.value) / self.unit_conversions.get(self.units)
     
     @property
     def units(self):
@@ -88,6 +100,8 @@ class NumericalEntryWithUnits(tk.Frame):
             self.value = float(self.value) / self.unit_conversions.get(self.previous_units) * self.unit_conversions.get(new_units)
 
             self.previous_units = self.units
+        
+        # No need to update the saved state, since units are only a visual thing; they are all stored in CEA units
 
 
 class LabeledInput(tk.Frame):
@@ -129,6 +143,7 @@ class LabeledInput(tk.Frame):
     
     @value.setter
     def value(self, new_value):
+        self.event_generate("<<Document-Altered>>")
         self.entry.delete(0, tk.END)
         self.entry.insert(0, new_value)
 
@@ -210,14 +225,17 @@ class LabeledOutputWithUnits(LabeledOutput):
         
 
 class LabeledInputWithUnits(LabeledInput):
-    def create_input(self, parent) -> NumericalEntryWithUnits:
-        entry_frame = NumericalEntryWithUnits(parent, self.unit_conversions, precision=None, width=8, change_on_update=False)
-        entry_frame.pack(side=tk.LEFT)
+    def create_input(self, parent) -> NumericalEntry:
+        self.entry_with_units = NumericalEntryWithUnits(parent, self.unit_conversions, precision=None, width=8, change_on_update=False)
+        self.entry_with_units.pack(side=tk.LEFT)
 
-        return entry_frame.entry
+        return self.entry_with_units.entry
     
     def __init__(self, parent, label_text="Labeled input: ", unit_conversions=[], uniform="", help_func=None, **kwargs):
         self.unit_conversions = unit_conversions
         super().__init__(parent, label_text, uniform, numerical=True, help_func=help_func, **kwargs)
 
 
+    @property
+    def base_value(self):
+        return self.entry_with_units.base_value

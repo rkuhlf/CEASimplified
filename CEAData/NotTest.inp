@@ -1,7 +1,7 @@
-problem   case=C:/Users/riley/Documents/SchoolAssignments/CEA/CEASimplified/CEAData/Test o/f=3.237,
+problem   case=C:/Users/riley/Documents/SchoolAssignments/CEA/CEASimplified/CEAData/NotTest o/f=3.237,
     rocket  tcest,k=3800
-p,psia=100000.0,
-sup,ae/at=11234.123
+p,psia=1000.0,
+sup,ae/at=134.123
 react
 fuel=customFuel wt=1  t,f=70
     h,kj/mol=32.0  Li 3.0 

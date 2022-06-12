@@ -10,7 +10,7 @@
 
 
  problem   case=C:/Users/riley/Documents/SchoolAssignments/CEA/CEASimplified/CEAD
- ata/HTPB o/f=5.0,
+ ata/Banana o/f=4.0,
      rocket  tcest,k=3800
  p,psia=400.0,
  sup,ae/at=4.0
@@ -101,23 +101,26 @@
   n 4/83  C(gr)            n 4/83  C(gr)            n 4/83  C(gr)          
   g11/99  H2O(cr)          g 8/01  H2O(L)           g 8/01  H2O(L)         
 
- O/F =   5.000000
+ O/F =   4.000000
 
                        EFFECTIVE FUEL     EFFECTIVE OXIDANT        MIXTURE
  ENTHALPY                  h(2)/R              h(1)/R               h0/R
- (KG-MOL)(K)/KG       -0.56032097E+03     -0.99112733E+00     -0.94212768E+02
+ (KG-MOL)(K)/KG       -0.56032097E+03     -0.99112733E+00     -0.11285710E+03
 
  KG-FORM.WT./KG             bi(2)               bi(1)               b0i
-  *C                   0.62334580E-01      0.11013248E-04      0.10398274E-01
-  *H                   0.24933832E+00      0.00000000E+00      0.41556386E-01
-  *N                   0.00000000E+00      0.53915890E-01      0.44929908E-01
-  *O                   0.00000000E+00      0.14486046E-01      0.12071705E-01
-  *Ar                  0.00000000E+00      0.32331996E-03      0.26943330E-03
+  *C                   0.62334580E-01      0.11013248E-04      0.12475727E-01
+  *H                   0.24933832E+00      0.00000000E+00      0.49867664E-01
+  *N                   0.00000000E+00      0.53915890E-01      0.43132712E-01
+  *O                   0.00000000E+00      0.14486046E-01      0.11588837E-01
+  *Ar                  0.00000000E+00      0.32331996E-03      0.25865596E-03
 
  POINT ITN      T            C           H           N           O 
                     AR
-   1   21    1131.995      -1.727      -7.920     -11.326     -34.638
-                 -22.001
+   1   21    1088.491      -1.209      -7.904     -11.296     -35.613
+                 -21.975
+ ADD  C(gr)          
+   1    3    1095.795      -1.657      -7.857     -11.308     -35.268
+                 -21.993
 
 
 
@@ -133,37 +136,39 @@
  FUEL        CH4                          1.0000000    -74738.522    294.261
  OXIDANT     Air                          1.0000000      -238.694    294.261
 
- O/F=    5.00000  %FUEL= 16.666667  R,EQ.RATIO= 3.443983  PHI,EQ.RATIO= 3.447704
+ O/F=    4.00000  %FUEL= 20.000000  R,EQ.RATIO= 4.304598  PHI,EQ.RATIO= 4.309631
 
-                 CHAMBER   THROAT     EXIT
- Pinf/P            1.0000   1.8396   30.250
- P, BAR            27.579   14.992  0.91171
- T, K             1132.00   981.97   482.62
- RHO, KG/CU M    5.9955 0 3.7571 0 4.6488-1
- H, KJ/KG         -783.33 -1044.79 -1850.66
- U, KJ/KG        -1243.33 -1443.82 -2046.78
- G, KJ/KG        -12047.6 -10816.1 -6653.07
- S, KJ/(KG)(K)     9.9508   9.9508   9.9508
+                 CHAMBER   THROAT
+ Pinf/P            1.0000   1.8271
+ P, BAR            27.579   15.095
+ T, K             1095.79   959.07
+ RHO, KG/CU M    6.1267 0 3.8313 0
+ H, KJ/KG         -938.35 -1192.45
+ U, KJ/KG        -1388.49 -1586.43
+ G, KJ/KG        -11977.6 -10854.3
+ S, KJ/(KG)(K)    10.0742  10.0742
 
- M, (1/n)          20.461   20.461   20.461
- Cp, KJ/(KG)(K)    1.7692   1.7152   1.5131
- GAMMAs            1.2982   1.3105   1.3672
- SON VEL,M/SEC      772.8    723.1    517.8
- MACH NUMBER        0.000    1.000    2.822
+ M, (1/n)          20.240   20.240
+ MW, MOL WT        19.407   19.407
+ Cp, KJ/(KG)(K)    1.8880   1.8278
+ GAMMAs            1.2781   1.2899
+ SON VEL,M/SEC      758.5    712.9
+ MACH NUMBER        0.000    1.000
 
  PERFORMANCE PARAMETERS
 
- Ae/At                      1.0000   4.0000
- CSTAR, M/SEC               1015.1   1015.1
- CF                         0.7124   1.4393
- Ivac, M/SEC                1274.9   1595.3
- Isp, M/SEC                  723.1   1461.0
+ Ae/At                      1.0000
+ CSTAR, M/SEC               1009.7
+ CF                         0.7060
+ Ivac, M/SEC                1265.5
+ Isp, M/SEC                  712.9
 
  MOLE FRACTIONS
 
- *Ar             0.00551   CH4             0.05117   *CO             0.13482
- *CO2            0.02673   HCN             0.00001   *H2             0.26304
- H2O             0.05871   NH3             0.00068   *N2             0.45931
+ *Ar             0.00502   CH4             0.07436   *CO             0.09956
+ *CO2            0.02702   C2H6            0.00001   HCN             0.00001
+ *H2             0.26262   H2O             0.07130   NH3             0.00082
+ *N2             0.41813   C(gr)           0.04115
 
   * THERMODYNAMIC PROPERTIES FITTED TO 20000.K
 
@@ -173,6 +178,9 @@
 
 
  NOTE. WEIGHT FRACTION OF FUEL IN TOTAL FUELS AND OF OXIDANT IN TOTAL OXIDANTS
+
+ WARNING!!  CALCULATIONS WERE STOPPED BECAUSE NEXT POINT IS MORE
+ THAN 50 K BELOW THE TEMPERATURE RANGE OF A CONDENSED SPECIES (ROCKET)
 
 
 

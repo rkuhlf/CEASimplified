@@ -1,0 +1,119 @@
+
+ *******************************************************************************
+
+         NASA-GLENN CHEMICAL EQUILIBRIUM PROGRAM CEA2, MAY 21, 2004
+                   BY  BONNIE MCBRIDE AND SANFORD GORDON
+      REFS: NASA RP-1311, PART I, 1994 AND NASA RP-1311, PART II, 1996
+
+ *******************************************************************************
+
+
+
+ problem   case=C:/Users/riley/Documents/SchoolAssignments/CEA/CEASimplified/CEAD
+ ata/Test o/f=3.23,
+     rocket  tcest,k=3800
+ p,psia=10000000.0,
+ sup,ae/at=11234.123
+ react
+ fuel=customFuel wt=1  t,f=70
+     h,kj/mol=32.0  Li 3.0
+ oxid=customOxidizer wt=1  t,f=70
+     h,kj/mol=800.0  Li 2.0
+ end
+
+ OPTIONS: TP=F  HP=F  SP=F  TV=F  UV=F  SV=F  DETN=F  SHOCK=F  REFL=F  INCD=F
+ RKT=T  FROZ=F  EQL=F  IONS=F  SIUNIT=T  DEBUGF=F  SHKDBG=F  DETDBG=F  TRNSPT=F
+
+ TRACE= 0.00E+00  S/R= 0.000000E+00  H/R= 0.000000E+00  U/R= 0.000000E+00
+
+ Pc,BAR =689473.044581
+
+ Pc/P =
+
+ SUBSONIC AREA RATIOS =
+
+ SUPERSONIC AREA RATIOS = 11234.1230
+
+ NFZ=  1  Mdot/Ac= 0.000000E+00  Ac/At= 0.000000E+00
+
+    REACTANT          WT.FRAC   (ENERGY/R),K   TEMP,K  DENSITY
+        EXPLODED FORMULA
+ F: customFuel       1.000000   0.384869E+04   294.26  0.0000
+          LI 3.00000
+ O: customOxidizer   1.000000   0.962173E+05   294.26  0.0000
+          LI 2.00000
+
+  SPECIES BEING CONSIDERED IN THIS SYSTEM
+ (CONDENSED PHASE MAY HAVE NAME LISTED SEVERAL TIMES)
+  LAST thermo.inp UPDATE:    9/09/04
+
+  g 7/97  *Li              j12/83  Li2              tpis82  Li(cr)         
+  tpis82  Li(cr)           tpis82  Li(L)          
+
+ O/F =   3.230000
+
+                       EFFECTIVE FUEL     EFFECTIVE OXIDANT        MIXTURE
+ ENTHALPY                  h(2)/R              h(1)/R               h0/R
+ (KG-MOL)(K)/KG        0.18482896E+03      0.69310860E+04      0.53362262E+04
+
+ KG-FORM.WT./KG             bi(2)               bi(1)               b0i
+  *Li                  0.14407146E+00      0.14407146E+00      0.14407146E+00
+
+ POINT ITN      T            LI
+   1    6    8481.813      -9.340
+
+
+
+
+
+           THEORETICAL ROCKET PERFORMANCE ASSUMING FROZEN COMPOSITION
+
+ Pin =******** PSIA
+ CASE = C:/Users/riley/
+
+             REACTANT                    WT FRACTION      ENERGY      TEMP
+                                          (SEE NOTE)     KJ/KG-MOL      K  
+ FUEL        customFuel                   1.0000000     32000.000    294.261
+ OXIDANT     customOxidizer               1.0000000    800000.000    294.261
+
+ O/F=    3.23000  %FUEL= 23.640662  R,EQ.RATIO= 0.000000  PHI,EQ.RATIO=-0.309598
+
+                 CHAMBER   THROAT     EXIT
+ Pinf/P            1.0000   1.7694 928882.3
+ P, BAR          689473.0 389658.5  0.74226
+ T, K             8481.81  7724.23   507.40
+ RHO, KG/CU M    1.2743 4 7.9083 3 2.2933-1
+ H, KJ/KG         44368.1  41420.6  16595.1
+ U, KJ/KG         38957.6  36493.3  16271.4
+ G, KJ/KG        -94900.7 -85409.0  8263.73
+ S, KJ/(KG)(K)    16.4197  16.4197  16.4197
+
+ M, (1/n)          13.034   13.034   13.034
+ Cp, KJ/(KG)(K)    3.8938   3.8856   2.7235
+ GAMMAs            1.1959   1.1964   1.3059
+ SON VEL,M/SEC     2543.7   2428.0    650.1
+ MACH NUMBER        0.000    1.000   11.464
+
+ PERFORMANCE PARAMETERS
+
+ Ae/At                      1.0000  11234.1
+ CSTAR, M/SEC               3590.8   3590.8
+ CF                         0.6762   2.0756
+ Ivac, M/SEC                4457.3   7496.4
+ Isp, M/SEC                 2428.0   7452.9
+
+ MOLE FRACTIONS
+
+ *Li             0.12212   Li2             0.87788
+
+  * THERMODYNAMIC PROPERTIES FITTED TO 20000.K
+
+    PRODUCTS WHICH WERE CONSIDERED BUT WHOSE MOLE FRACTIONS
+    WERE LESS THAN 5.000000E-06 FOR ALL ASSIGNED CONDITIONS
+
+
+
+ NOTE. WEIGHT FRACTION OF FUEL IN TOTAL FUELS AND OF OXIDANT IN TOTAL OXIDANTS
+
+
+

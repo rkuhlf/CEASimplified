@@ -1,5 +1,9 @@
-problem   case=./CEAData/.temp o/f=3.3,
+problem   case=./CEAData/.temp o/f=4.0,
     rocket  tcest,k=3800
-p,psia=522.0,
-sup,ae/at=10.0
+p,psia=400.0,
+sup,ae/at=4.0
 react
+fuel=customFuel wt=1  t,f=70
+    h,kj/mol=4.0312  H 2.0 
+oxid=N2O wt=1  t,f=70
+end

@@ -1,9 +1,13 @@
 
+
 # TODO: add an explanation of heat of formation. Focus on how to calculate.
-# TODO: Make unit conversion dropdowns everywhere, include a list of the units and their conversion factors in the parameters
+
 # TODO: Improve units. I do not think that it is necessary to remember the unit selections within a file, but it would be good for the software as a whole to remember the default selections from some kind of json file in memory
-# TODO: add an asterisk to the title bar if you have not saved your most recent change (probably will be sucky)
+# TODO: Make all of the outputs in the outputs table have adjustable units
+
 # TODO: figure out why increasing the area ratio always gives a better Isp
+
+# TODO: Extend the lines
 
 import os
 import re
@@ -11,7 +15,7 @@ import subprocess
 
 import tkinter as tk
 from tkinter import filedialog as fd
-from tkinter import CENTER, LEFT, RIGHT, ttk
+from tkinter import ttk
 from tkinter import messagebox
 from HelpWindow import AREA_RATIO_WINDOW, CEA_WINDOW, CF_WINDOW, CSTAR_WINDOW, FUEL_WINDOW, ISP_WINDOW, OF_WINDOW, OXIDIZER_WINDOW, PRESSURE_WINDOW
 from PropellantSelect import CompoundSelect
@@ -27,9 +31,20 @@ from compound import CustomCompound, PresetCompound
 from helperWidgets import LabeledInput, LabeledInputWithUnits, LabeledOutput, LabeledOutputWithUnits, NumericalEntryWithUnits, help_button
 import images
 
-data_folder = "./CEAData"
-fcea_folder = "./FCEA"
+DATA_FOLDER = "./CEAData"
+FCEA_FOLDER = "./FCEA"
 CREATE_NO_WINDOW = 0x08000000
+APPLICATION_NAME = "CEA Simplified"
+
+def generate_name(file: str=None, saved=True):
+    if file is None:
+        return f"{APPLICATION_NAME} - Unsaved*"
+    
+    name = f"{APPLICATION_NAME} - {file}"
+    if not saved:
+        name += "*"
+    
+    return name
 
 def hide_file(path: str):
     subprocess.run(f"attrib +h {path}", creationflags=CREATE_NO_WINDOW)
@@ -73,7 +88,10 @@ class Inputs(tk.Frame):
 
         self.pressure_input = LabeledInputWithUnits(text_inputs, "Pressure: ", unit_conversions={
             "psia": 1,
-            "Pa": 6894.75729
+            "Pa": 6894.75729,
+            "atm": 0.068046,
+            "bar": 0.0689476094997927,
+            "torr": 51.714960008010713466
         }, uniform="main", help_func=PRESSURE_WINDOW)
         self.pressure_input.pack()
 
@@ -118,7 +136,7 @@ class Inputs(tk.Frame):
     @property
     def pressure(self):
         try:
-            return float(self.pressure_input.value)
+            return float(self.pressure_input.base_value)
         except ValueError as e:
             print(e)
             raise UserInputException("Please input a value for the chamber pressure.")
@@ -135,6 +153,7 @@ class Inputs(tk.Frame):
     @property
     def fuel(self):
         "Constructs a fuel object and returns it"
+        
         if self.is_custom_fuel:
             # Name of the compound does not matter to CEA unless it is a preset
             return CustomCompound("customFuel", self.fuel_select.formation_heat, self.fuel_select.elements)
@@ -218,7 +237,9 @@ class Outputs(tk.Frame):
 
         self.cstar_display = LabeledOutputWithUnits(performance, prefix="Characteristic Velocity: ", help_func=CSTAR_WINDOW, uniform="outputs", unit_conversions={
             "m/s": 1,
-            "ft/s": 3.28084
+            "ft/s": 3.28084,
+            "mph": 2.23694,
+            "kph": 3.6
         }, precision=4)
         self.cstar_display.pack()
         self.CF_display = LabeledOutput(performance, prefix="Nozzle Coefficient: ", help_func=CF_WINDOW, uniform="outputs", precision=3, numerical=True)
@@ -226,8 +247,8 @@ class Outputs(tk.Frame):
 
         self.Isp_display = LabeledOutputWithUnits(performance, prefix="Specific Impulse: ", help_func=ISP_WINDOW, uniform="outputs", unit_conversions={
             "s": 1,
-            "Ns/kg": 9.81,
-            # TODO: figure out what this is in imperial
+            "m/s": 9.81,
+            "ft/s": 32.2
         }, precision=3)
         self.Isp_display.pack()
 
@@ -250,20 +271,49 @@ filetypes = (
     ('All files', '*.*')
 )
 
-class Main(tk.Frame):
+
+class Editor(tk.Frame):
+    def update_title(self, saved=True):
+        if self.current_file == self.default_temp_file:
+            root.title(generate_name())
+        else:
+            root.title(generate_name(self.current_file, saved))
+        
+    def set_unsaved(self):
+        self.update_title(False)
+        self.unsaved = True
+    
+    def set_saved(self):
+        self.update_title()
+        self.unsaved = False
+    
+    def check_saved(self):
+        if self.unsaved:
+            should_continue = messagebox.askokcancel("Erase Data?", "This will erase unsaved progress. Are you sure you want to continue?")
+        
+        return should_continue
+
     def clear(self):
         self.inputs.clear()
         self.outputs.clear()
 
     def new_file(self):
+        if not self.check_saved():
+            return
+        
         # set to temp and clear inputs
         self.set_current_file(self.default_temp_file)
         self.clear()
 
+        self.set_unsaved()
+
     def prompt_and_load_file(self):
+        if not self.check_saved():
+            return
+        
         filename = fd.askopenfilename(
             title='Open an Input File',
-            initialdir=f'./{data_folder}',
+            initialdir=f'./{DATA_FOLDER}',
             filetypes=filetypes)
         
         if not filename:
@@ -315,7 +365,7 @@ class Main(tk.Frame):
                     element_dictionary = string_to_dict(element_string)
                     select_object.elements = element_dictionary
                 else:
-                    preset_selection = re.search(f"{prefix}=(\w*)", text)
+                    preset_selection = re.search(f"{prefix}=(.*?)\s", text)
 
                     if preset_selection:
                         select_object.is_custom = False
@@ -326,18 +376,19 @@ class Main(tk.Frame):
             
             update_propellant_select("fuel", self.inputs.fuel_select)
             update_propellant_select("oxid", self.inputs.oxidizer_select)
-            
+        
+        self.set_saved()
     
     def save_as_current_file(self):
         name = fd.asksaveasfilename(
                 title='Save as',
-                initialdir=f'./{data_folder}',
+                initialdir=f'./{DATA_FOLDER}',
                 filetypes=filetypes)
         
         if not name:
             return
             
-        self.set_current_file(name)
+        self.set_current_file(name, has_been_saved=False)
 
         self.save_file()
 
@@ -349,7 +400,10 @@ class Main(tk.Frame):
     
     def save_file(self):
         # TODO: make a save function that does not require everything to be filled out
-        self.generate_file()
+        successful = self.generate_file()
+
+        if successful:
+            self.set_saved()
 
     def generate_file(self):
         "Creates and writes data to the proper input file. Displays errors on GUI."
@@ -372,6 +426,7 @@ class Main(tk.Frame):
                 selected_fuel = self.inputs.fuel
                 f.write(f"fuel={selected_fuel.name} wt=1  t,f=70\n")
                 if self.inputs.is_custom_fuel:
+                    print(selected_fuel.formation_heat)
                     f.write(f"    h,kj/mol={selected_fuel.formation_heat}  {selected_fuel.elements_string()}\n")
                 
                 selected_oxidizer = self.inputs.oxidizer
@@ -393,6 +448,7 @@ class Main(tk.Frame):
             messagebox.showerror(title="Permission Error", message=f"Could not load file {self.current_file_input} due to insufficient permissions.")
         else:
             # Returns true if there are no exceptions
+            self.set_saved()
             return True
         
         return False
@@ -473,7 +529,7 @@ class Main(tk.Frame):
 
         to_run = self.current_file
         # I believe that this checks if it is using a relative path so that FCEA can reach it after the cwd change
-        if self.current_file.startswith(data_folder):
+        if self.current_file.startswith(DATA_FOLDER):
             to_run = "../" + to_run
 
         subprocess.run(f"echo {to_run} | \"FCEA2.exe\"", cwd="FCEA", shell=True, creationflags=CREATE_NO_WINDOW)
@@ -507,9 +563,10 @@ class Main(tk.Frame):
         self.outputs.grid(row=0, column=2)
 
 
-        self.default_temp_file = f"{data_folder}/.temp"
+        self.default_temp_file = f"{DATA_FOLDER}/.temp"
         self.set_current_file(self.default_temp_file)
         self.load_file(self.current_file_input)
+        self.unsaved = True
 
         menu = tk.Menu(self)
         root.config(menu=menu)
@@ -551,12 +608,9 @@ class Main(tk.Frame):
         # Add some units options in another dropdown here; maybe have some set everything imperial and metric functions. Would kind of suck because I have to make sure that everything that is already put in gets converted correctly
         
     
-    def set_current_file(self, new_path: str):
+    def set_current_file(self, new_path: str, has_been_saved=True):
         self.current_file = new_path
-        if new_path == self.default_temp_file:
-            root.title(f"{APPLICATION_NAME}")
-        else:
-            root.title(f"{APPLICATION_NAME} - {new_path}")
+        self.update_title(has_been_saved)
     
     @property
     def current_file_input(self):
@@ -566,20 +620,24 @@ class Main(tk.Frame):
     def current_file_output(self):
         return f"{self.current_file}.out"
 
-        
+
+
 if __name__ == "__main__":
     root = tk.Tk()
-    APPLICATION_NAME = "CEA Simplified"
-    root.title(APPLICATION_NAME)
+    root.title(generate_name())
     root.iconbitmap("rocket.ico")
     images.initialize_images()
 
-    main = Main(root)
-    main.pack(fill="both", expand=True)
+    editor = Editor(root)
+    editor.pack(fill="both", expand=True)
 
     root.state("zoomed")
 
+    root.bind("<<Document-Altered>>", lambda *args: editor.set_unsaved())
+
     root.mainloop()
+
+    
 
 
 
