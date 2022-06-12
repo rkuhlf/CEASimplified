@@ -1,13 +1,11 @@
 
-
-# TODO: add an explanation of heat of formation. Focus on how to calculate.
+# TODO: Make all of the outputs in the outputs table have adjustable units
 
 # TODO: Improve units. I do not think that it is necessary to remember the unit selections within a file, but it would be good for the software as a whole to remember the default selections from some kind of json file in memory
-# TODO: Make all of the outputs in the outputs table have adjustable units
 
 # TODO: figure out why increasing the area ratio always gives a better Isp
 
-# TODO: Extend the lines
+# TODO: Save the values from custom into the not-custom spot
 
 import os
 import re
@@ -70,8 +68,10 @@ def string_to_dict(string: str):
 
 class Inputs(tk.Frame):
     """Input set for very basic CEA"""
-    def __init__(self, parent):
-        super().__init__(parent)
+    def __init__(self, parent, **kwargs):
+        super().__init__(parent, **kwargs)
+
+        top_spacer = tk.Frame(self).pack(expand=True, fill=tk.BOTH)
 
         help_wrapper = tk.Frame(self)
         help_wrapper.pack(pady=(0, 40))
@@ -102,7 +102,8 @@ class Inputs(tk.Frame):
         sep.pack(fill="x")
         
         self.propellants_frame = tk.Frame(self)
-        self.propellants_frame.pack(fill=tk.X)
+        self.propellants_frame.pack(fill=tk.BOTH, expand=True)
+        self.propellants_frame.grid_rowconfigure(0, weight=1)
         self.propellants_frame.grid_columnconfigure(0, weight=1, uniform="propellant_column")
         self.propellants_frame.grid_columnconfigure(2, weight=1, uniform="propellant_column")
 
@@ -426,7 +427,6 @@ class Editor(tk.Frame):
                 selected_fuel = self.inputs.fuel
                 f.write(f"fuel={selected_fuel.name} wt=1  t,f=70\n")
                 if self.inputs.is_custom_fuel:
-                    print(selected_fuel.formation_heat)
                     f.write(f"    h,kj/mol={selected_fuel.formation_heat}  {selected_fuel.elements_string()}\n")
                 
                 selected_oxidizer = self.inputs.oxidizer
@@ -549,11 +549,9 @@ class Editor(tk.Frame):
         self.grid_rowconfigure(0, weight=1)
 
         inputs_container = tk.Frame(self)
-        inputs_container.grid(row=0, column=0)
+        inputs_container.grid(row=0, column=0, sticky="nsew")
         self.inputs: Inputs = Inputs(inputs_container)
-        self.inputs.pack()
-        runButton = tk.Button(inputs_container, text="Run", command=self.run_file)
-        runButton.pack(pady=20)
+        self.inputs.pack(fill=tk.BOTH, expand=True)
         self.bind_all('<Return>', lambda event : self.run_file())
 
         sep = ttk.Separator(self, orient=tk.VERTICAL)
@@ -561,6 +559,9 @@ class Editor(tk.Frame):
 
         self.outputs: Outputs = Outputs(self)
         self.outputs.grid(row=0, column=2)
+
+        run_button = tk.Button(inputs_container, text="ᐅ", command=self.run_file, font=("Helvetica", 20, "normal"))
+        run_button.place(anchor=tk.SE, relx=1, rely=1)
 
 
         self.default_temp_file = f"{DATA_FOLDER}/.temp"
@@ -640,10 +641,3 @@ if __name__ == "__main__":
     
 
 
-
-
-# Have a help menu
-# Maybe a troubleshooting page with some info
-# I am pretty sure that having spaces anywhere in your path will screw it up beyond recognition
-
-# edit menu includes the run button with a shortcut (probably enter)

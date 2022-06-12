@@ -2,6 +2,7 @@ import tkinter as tk
 from turtle import width
 from typing import Dict, List
 import typing
+from HelpWindow import HEAT_WINDOW
 
 from elements import Element, NonExistentElementException, element_names, elements, get_element_by_name
 from ElementDropDown import ElementDropDown, SearchableDropdown
@@ -64,18 +65,12 @@ class ElementDictionaryPair(tk.Frame):
     
     @property
     def element(self):
-        to_return = self.element_input.element
-        if to_return in element_names:
-            return to_return
-        else:
-            raise UserInputException("Please select an element from the dropdown for every input.")
+        return self.element_input.element
         
     @property
-    def amount(self):
-        try:
-            return float(self.amount_input.get())
-        except ValueError:
-            raise UserInputException("Please input a value for all element amounts.")
+    def amount(self) -> str:
+        return self.amount_input.get()
+
 
 class ElementDictionaryInput(tk.Frame):
     """dictionary input mapping a dropdown of an element to a number. Supports multiple elements"""
@@ -122,26 +117,33 @@ class ElementDictionaryInput(tk.Frame):
         self.add_button.pack()
 
     @property
-    def elements(self) -> dict:
+    def elements(self) -> Dict[Element, float]:
         ans = dict()
         for pair in self.pair_list.pairs:
-            ans[get_element_by_name(pair.element)] = pair.amount
+            try:
+                ans[get_element_by_name(pair.element)] = pair.amount
+            except NonExistentElementException:
+                pass
         
         return ans
     
     @elements.setter
     def elements(self, new_elements: dict) -> None:
+        """Accepts a dictionary with keys that can be element name, symbol, full name, or object"""
         # Clear the old elements
         self.pair_list.clear()
 
         # Input the new elements
         for key, amount in new_elements.items():
-            # Check if element is a symbol in the list of elements
-            for element in elements:
-                # Check if they only put the symbol in
-                if key == element.symbol:
-                    key = element.full_name
-                    break
+            if isinstance(key, Element):
+                key = key.full_name
+            else:
+                # Check if element is a symbol in the list of elements
+                for element in elements:
+                    # Check if they only put the symbol in
+                    if key == element.symbol or key == element.name:
+                        key = element.full_name
+                        break
             
             self.pair_list.add_pair(key, amount)
 
@@ -163,6 +165,7 @@ class CompoundSelect(tk.Frame):
             }, precision=None, change_on_update=False, width=8)
 
         self.formation_heat_input.pack(side=tk.LEFT)
+        help_button(heat_frame, HEAT_WINDOW).pack(side=tk.LEFT)
 
         self.composition_input = ElementDictionaryInput(self.custom_frame)
         self.composition_input.pack()
@@ -174,13 +177,42 @@ class CompoundSelect(tk.Frame):
         self.preset_selection = SearchableDropdown(self.preset_frame, self.preset_compound_options)
         self.preset_selection.pack()
 
+    def save_custom(self):
+        old_heat = self.formation_heat_input.value
+        self.prev_formation_heat = old_heat
+
+        old_elements = self.composition_input.elements
+        self.prev_elements = old_elements
+
+    def save_preset(self):
+        old_selection = self.preset_selection.value
+        self.prev_preset = old_selection
+
+    def load_custom(self):
+        # The user cannot change the units without it being activated, so as long as we remember the units in JSON we don't need to remember them here
+        if self.prev_formation_heat is not None:
+            self.formation_heat_input.value = self.prev_formation_heat
+
+        if self.prev_elements is not None:
+            self.composition_input.elements = self.prev_elements
+
+    def load_preset(self):
+        if self.prev_preset is not None:
+            self.preset_selection.value = self.prev_preset
+
     def toggle_custom(self):
         if self.is_custom:
+            self.save_preset()
             self.preset_frame.destroy()
+
             self.pack_custom()
+            self.load_custom()
         else:
+            self.save_custom()
             self.custom_frame.destroy()
+
             self.pack_preset()
+            self.load_preset()
 
     def __init__(self, parent, name: str="", preset_compound_options: "List[str]"=[], help_func=None):
         super(CompoundSelect, self).__init__(parent)
@@ -206,6 +238,10 @@ class CompoundSelect(tk.Frame):
         self.customCheck = tk.Checkbutton(self.custom_frame, text = "", variable = self.isCustomVar, \
                         onvalue=True, offvalue=False, command=self.toggle_custom, cursor="hand2")
         self.customCheck.pack(side=tk.RIGHT)
+
+        self.prev_formation_heat = None
+        self.prev_preset = None
+        self.prev_elements = None
 
         if self.is_custom:
             self.pack_custom()
@@ -260,8 +296,12 @@ class CompoundSelect(tk.Frame):
             raise Exception("Cannot set formation heat to a non-float value")
 
     @property
-    def elements(self):
+    def elements(self) -> Dict[Element, float]:
         if self.is_custom:
+            for element, amount in self.composition_input.elements.items():
+                if element not in elements:
+                    raise UserInputException("Please select an element from the dropdown for every input.")
+            
             return self.composition_input.elements
         
         raise Exception("Attempting to access list of elements from a preset.")

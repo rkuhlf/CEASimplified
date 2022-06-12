@@ -31,6 +31,12 @@ class CustomCompound(Compound):
         ans = ""
         for element, amount in self.elements.items():
             symbol = element.symbol
-            ans += symbol + " " + str(amount) + " "
+            
+            try:
+                float(amount)
+            except ValueError:
+                raise UserInputException("Please input a value for all element amounts.")
+            
+            ans += symbol + " " + amount + " "
 
         return ans

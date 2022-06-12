@@ -48,3 +48,5 @@ OXIDIZER_MESSAGE = PROPELLANT_MESSAGE + "\n\nRocket oxidizer does not necessaril
 OXIDIZER_WINDOW = lambda : helpWindow("How Does Rocket Oxidizer Work?", OXIDIZER_MESSAGE)
 
     
+HEAT_MESSAGE = "The heat/enthalpy of formation is one of the most important qualities of a propellant. The higher the heat of formation is, the more energy it took to create the molecule, so the more energy is stored in it. You can often find a value of heat of formation for a specific molecule or polymer by searching, but make sure to input th exact same chemical formula that they use (if you use units that include moles). Unfortunately, the composition of different polymers will vary between production methods, so the heat of formation will also vary."
+HEAT_WINDOW = lambda : helpWindow("How Does Rocket Oxidizer Work?", HEAT_MESSAGE)
