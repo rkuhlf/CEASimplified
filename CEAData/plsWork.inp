@@ -1,8 +1,10 @@
-problem   case=C:/Users/riley/Documents/SchoolAssignments/CEA/new-CEA/CEAData/plsWork o/f=5.0,
+problem   case=C:/Users/riley/Documents/SchoolAssignments/CEA/CEASimplified/CEAData/plsWork o/f=5.0,
     rocket  tcest,k=3800
-p,psia=400.0,
+p,psia=1e-08,
 sup,ae/at=4.0
 react
-fuel=H2 wt=1  t,f=70
-oxid=Air wt=1  t,f=70
+fuel=customFuel wt=1  t,f=70
+    h,kj/mol=0.0  Pb 2.0 
+oxid=customOxidizer wt=1  t,f=70
+    h,kj/mol=15.0  O 2.0 
 end

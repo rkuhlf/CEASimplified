@@ -293,3 +293,14 @@ def _number_profile(value, precision):
 
   return sig_digits, int(-power), is_neg
 
+
+def list_to_precision(arr, n):
+  ans = []
+  for x in arr:
+    try:
+      x = float(x)
+      ans.append(std_notation(x, n))
+    except ValueError:
+      ans.append("")
+  
+  return ans

@@ -9,9 +9,10 @@
 
 
 
- problem   case=./CEAData/.temp o/f=6.0,
+ problem   case=C:/Users/riley/Documents/SchoolAssignments/CEA/CEASimplified/CEAD
+ ata/Yay o/f=6.0,
      rocket  tcest,k=3800
- p,psia=1600.0,
+ p,psia=350.0,
  sup,ae/at=4.0
  react
  fuel=H2 wt=1  t,f=70
@@ -23,7 +24,7 @@
 
  TRACE= 0.00E+00  S/R= 0.000000E+00  H/R= 0.000000E+00  U/R= 0.000000E+00
 
- Pc,BAR =   110.315687
+ Pc,BAR =    24.131557
 
  Pc/P =
 
@@ -68,7 +69,7 @@
   *O                   0.00000000E+00      0.22720663E-01      0.19474854E-01
 
  POINT ITN      T            H           N           O 
-   1   12    2294.730      -7.893     -12.123     -21.811
+   1   13    2289.812      -8.650     -12.879     -21.835
 
 
 
@@ -76,8 +77,8 @@
 
            THEORETICAL ROCKET PERFORMANCE ASSUMING FROZEN COMPOSITION
 
- Pin =  1600.0 PSIA
- CASE = ./CEAData/.temp
+ Pin =   350.0 PSIA
+ CASE = C:/Users/riley/
 
              REACTANT                    WT FRACTION      ENERGY      TEMP
                                           (SEE NOTE)     KJ/KG-MOL      K  
@@ -87,33 +88,33 @@
  O/F=    6.00000  %FUEL= 14.285714  R,EQ.RATIO= 3.638841  PHI,EQ.RATIO= 3.638841
 
                  CHAMBER   THROAT     EXIT
- Pinf/P            1.0000   1.8182   28.071
- P, BAR            110.32   60.675   3.9298
- T, K             2294.73  2020.00  1072.91
- RHO, KG/CU M    6.3996 0 3.9986 0 4.8760-1
- H, KJ/KG         1578.29   610.52 -2489.37
- U, KJ/KG         -145.50  -906.89 -3295.33
- G, KJ/KG        -38457.5 -34632.0 -21208.3
- S, KJ/(KG)(K)    17.4468  17.4468  17.4468
+ Pinf/P            1.0000   1.8184   28.095
+ P, BAR            24.132   13.271  0.85893
+ T, K             2289.81  2015.35  1069.52
+ RHO, KG/CU M    1.4021 0 8.7605-1 1.0684-1
+ H, KJ/KG         1578.29   611.87 -2482.46
+ U, KJ/KG         -142.87  -902.99 -3286.37
+ G, KJ/KG        -40986.8 -36851.3 -22363.6
+ S, KJ/(KG)(K)    18.5889  18.5889  18.5889
 
- M, (1/n)          11.068   11.068   11.068
- Cp, KJ/(KG)(K)    3.5653   3.4773   3.0327
- GAMMAs            1.2669   1.2756   1.3293
- SON VEL,M/SEC     1477.8   1391.2   1035.0
+ M, (1/n)          11.062   11.062   11.062
+ Cp, KJ/(KG)(K)    3.5639   3.4758   3.0313
+ GAMMAs            1.2673   1.2759   1.3297
+ SON VEL,M/SEC     1476.9   1390.3   1033.9
  MACH NUMBER        0.000    1.000    2.756
 
  PERFORMANCE PARAMETERS
 
  Ae/At                      1.0000   4.0000
- CSTAR, M/SEC               1983.0   1983.0
- CF                         0.7016   1.4383
- Ivac, M/SEC                2481.9   3134.8
- Isp, M/SEC                 1391.2   2852.2
+ CSTAR, M/SEC               1981.3   1981.3
+ CF                         0.7017   1.4383
+ Ivac, M/SEC                2479.9   3131.9
+ Isp, M/SEC                 1390.3   2849.8
 
  MOLE FRACTIONS
 
- *H              0.00068   *H2             0.56807   H2O             0.21551
- NH3             0.00029   *N2             0.21541   *OH             0.00005
+ *H              0.00141   *H2             0.56771   H2O             0.21533
+ NH3             0.00006   *N2             0.21539   *OH             0.00009
 
   * THERMODYNAMIC PROPERTIES FITTED TO 20000.K
 

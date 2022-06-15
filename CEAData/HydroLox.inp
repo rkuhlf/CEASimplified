@@ -1,4 +1,4 @@
-problem   case=C:/Users/riley/Documents/SchoolAssignments/CEA/new-CEA/CEAData/HydroLox o/f=5.0,
+problem   case=C:/Users/riley/Documents/SchoolAssignments/CEA/CEASimplified/CEAData/HydroLox o/f=5.0,
     rocket  tcest,k=3800
 p,psia=400.0,
 sup,ae/at=4.0

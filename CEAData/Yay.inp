@@ -1,0 +1,8 @@
+problem   case=C:/Users/riley/Documents/SchoolAssignments/CEA/CEASimplified/CEAData/Yay o/f=6.0,
+    rocket  tcest,k=3800
+p,psia=350.0,
+sup,ae/at=4.0
+react
+fuel=H2 wt=1  t,f=70
+oxid=N2O wt=1  t,f=70
+end

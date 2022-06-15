@@ -10,7 +10,6 @@ from Exceptions import PresetException, UserInputException
 from helperWidgets import LabeledInput, NumericalEntry, NumericalEntryWithUnits, help_button
 from fonts import title_font, subtitle_font
 
-
 class MolarMassMultiplier:
     def __init__(self, multiplier=1, power=1) -> None:
         self.multiplier = multiplier
@@ -157,12 +156,19 @@ class CompoundSelect(tk.Frame):
         heat_frame = tk.Frame(self.custom_frame)
         heat_frame.pack()
         tk.Label(heat_frame, text="Heat of Formation: ").pack(side=tk.LEFT)
-        self.formation_heat_input = InputMolarMassUnits(heat_frame, unit_conversions={
+
+        def update_units(old_units, new_units):
+            self.formation_heat_units = new_units
+
+        self.formation_heat_input = InputMolarMassUnits(
+            heat_frame, unit_conversions={
             "kJ/mol": 1,
             # Because we want to divide by the molar mass, we use a negative one for the power
             # Converting 1000 grams to one kilogram is multiplication by 1000
             "kJ/kg": MolarMassMultiplier(multiplier=1000, power=-1)
             }, precision=None, change_on_update=False, width=8)
+        
+        self.formation_heat_input.units = self.formation_heat_units
 
         self.formation_heat_input.pack(side=tk.LEFT)
         help_button(heat_frame, HEAT_WINDOW).pack(side=tk.LEFT)
@@ -239,24 +245,35 @@ class CompoundSelect(tk.Frame):
                         onvalue=True, offvalue=False, command=self.toggle_custom, cursor="hand2")
         self.customCheck.pack(side=tk.RIGHT)
 
-        self.prev_formation_heat = None
-        self.prev_preset = None
-        self.prev_elements = None
+        self.set_prevs()
+
+        self._formation_heat_units = "kJ/mol"
 
         if self.is_custom:
             self.pack_custom()
         else:
             self.pack_preset()
-
+    
+    def set_prevs(self):
+        self.prev_formation_heat = None
+        self.prev_preset = None
+        self.prev_elements = None
+    
     def clear(self):
-        # FIXME: I need to make this not a double toggle if I want to remember double toggles
+        self.set_prevs()
+
         if not self.is_custom:
             # Perform the click effects
             self.isCustomVar.set(not self.isCustomVar.get())
             self.toggle_custom()
+            self.set_prevs()
         
         self.isCustomVar.set(not self.isCustomVar.get())
         self.toggle_custom()
+        
+        self.set_prevs()
+
+
 
     @property
     def is_custom(self) -> bool:
@@ -294,6 +311,23 @@ class CompoundSelect(tk.Frame):
         except ValueError as e:
             print(e)
             raise Exception("Cannot set formation heat to a non-float value")
+
+    @property
+    def formation_heat_units(self):
+        return self._formation_heat_units
+
+    @formation_heat_units.setter
+    def formation_heat_units(self, u):
+        # If it is already the same then we do not have to do anything
+        # This is the only thing holding back infinite recursion (so bad)
+        if self._formation_heat_units == u:
+            return
+        
+        self._formation_heat_units = u
+
+        
+        if hasattr(self, "formation_heat_input"):
+            self.formation_heat_input.units = u
 
     @property
     def elements(self) -> Dict[Element, float]:

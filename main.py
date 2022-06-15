@@ -1,13 +1,10 @@
 
-# TODO: Make all of the outputs in the outputs table have adjustable units
-
-# TODO: Improve units. I do not think that it is necessary to remember the unit selections within a file, but it would be good for the software as a whole to remember the default selections from some kind of json file in memory
-
+# There are no default units for heat of formation because frick that
 # TODO: figure out why increasing the area ratio always gives a better Isp
 
-# TODO: Save the values from custom into the not-custom spot
 
 import os
+import pickle
 import re
 import subprocess
 
@@ -15,6 +12,8 @@ import tkinter as tk
 from tkinter import filedialog as fd
 from tkinter import ttk
 from tkinter import messagebox
+import traceback
+
 from HelpWindow import AREA_RATIO_WINDOW, CEA_WINDOW, CF_WINDOW, CSTAR_WINDOW, FUEL_WINDOW, ISP_WINDOW, OF_WINDOW, OXIDIZER_WINDOW, PRESSURE_WINDOW
 from PropellantSelect import CompoundSelect
 import os.path
@@ -26,13 +25,48 @@ from typing import List
 from Exceptions import PresetException, UnknownCEAException, UserInputException
 
 from compound import CustomCompound, PresetCompound
-from helperWidgets import LabeledInput, LabeledInputWithUnits, LabeledOutput, LabeledOutputWithUnits, NumericalEntryWithUnits, help_button
+from helperWidgets import LabeledInput, LabeledInputWithUnits, LabeledOutput, LabeledOutputWithUnits, MultiplyAndAdd, UnitsDropDown, help_button
 import images
+from toPrecision import list_to_precision
 
 DATA_FOLDER = "./CEAData"
 FCEA_FOLDER = "./FCEA"
 CREATE_NO_WINDOW = 0x08000000
 APPLICATION_NAME = "CEA Simplified"
+
+PRESSURE_UNITS = {
+    "psia": 1,
+    "Pa": 6894.75729,
+    "atm": 0.068046,
+    "bar": 0.0689476094997927,
+    "torr": 51.714960008010713466
+}
+VELOCITY_UNITS = {
+    "m/s": 1,
+    "ft/s": 3.28084,
+    "mph": 2.23694,
+    "kph": 3.6
+}
+ISP_UNITS = {
+    "s": 1,
+    "m/s": 9.81,
+    "ft/s": 32.2
+}
+
+TEMPERATURE_UNITS = {
+    "K": MultiplyAndAdd(),
+    "C": MultiplyAndAdd(add=-273.15),
+    "F": MultiplyAndAdd(multiplier=9/5, add=-559.67)
+}
+
+DENSITY_UNITS = {
+    "kg/m^3": 1,
+    "g/ml": 0.001,
+    "lb/in^3": 3.61273e-5,
+    "lb/ft^3": 0.062428,
+    "slugs/ft^3": 0.00194032033
+}
+
 
 def generate_name(file: str=None, saved=True):
     if file is None:
@@ -51,7 +85,6 @@ def unhide_file(path: str):
     subprocess.run(f"attrib -h {path}", creationflags=CREATE_NO_WINDOW)
 
 
-
 def string_to_dict(string: str):
     """Transform a string like C 1 H 2 into {C: 1, H: 2}"""
     string = string.strip()
@@ -65,6 +98,7 @@ def string_to_dict(string: str):
         ans[items[i * 2]] = items[i * 2 + 1]
     
     return ans
+
 
 class Inputs(tk.Frame):
     """Input set for very basic CEA"""
@@ -86,13 +120,7 @@ class Inputs(tk.Frame):
         self.OF_input = LabeledInput(text_inputs, "O/F: ", numerical=True, uniform="main", help_func=OF_WINDOW)
         self.OF_input.pack()
 
-        self.pressure_input = LabeledInputWithUnits(text_inputs, "Pressure: ", unit_conversions={
-            "psia": 1,
-            "Pa": 6894.75729,
-            "atm": 0.068046,
-            "bar": 0.0689476094997927,
-            "torr": 51.714960008010713466
-        }, uniform="main", help_func=PRESSURE_WINDOW)
+        self.pressure_input = LabeledInputWithUnits(text_inputs, "Pressure: ", unit_conversions=PRESSURE_UNITS, uniform="main", help_func=PRESSURE_WINDOW)
         self.pressure_input.pack()
 
         self.area_ratio_input = LabeledInput(text_inputs, "Area Ratio: ", numerical=True, uniform="main", help_func=AREA_RATIO_WINDOW)
@@ -117,6 +145,14 @@ class Inputs(tk.Frame):
 
         self.oxidizer_select = CompoundSelect(self.propellants_frame, name="Select Oxidizer", preset_compound_options=["Air", "H2O2(L)", "N2O", "O2", "CL2", "F2", "N2H4(L)"], help_func=OXIDIZER_WINDOW)
         self.oxidizer_select.grid(row=0, column=2, padx=padding, sticky="nw")
+
+    def apply_units(self, selected_units):
+        self.pressure_input.entry_with_units.units = selected_units["pressure input"]
+
+    def get_units(self) -> dict:
+        return {
+            "pressure input": self.pressure_input.entry_with_units.units
+        }
 
     def clear(self):
         self.OF_input.clear()
@@ -150,7 +186,6 @@ class Inputs(tk.Frame):
             print(e)
             raise UserInputException("Please input a value for the area ratio.")
 
-    # Wow object-oriented programming gets sucky in a hurry
     @property
     def fuel(self):
         "Constructs a fuel object and returns it"
@@ -181,50 +216,46 @@ class Inputs(tk.Frame):
 
 
 class Outputs(tk.Frame):
-    def pack_row(self, parent, values: "List[str]"=[], start_col=0, row=0, **kwargs):
-        for index, val in enumerate(values):
-            label = tk.Label(parent, text=val)
-            label.grid(row=row, column=start_col+index, **kwargs)
+    def pack_row(self, values: "List[str]"=[], start_col=0, row=0):
+        for column, val in enumerate(values, start=start_col):
+            self.entries[row][column].configure(text=val)
 
-    def pack_conditions(self, new_outputs={}):
-        self.conditions = tk.Frame(self)
-        self.conditions.pack()
-
-        row_title_offset = 5
-        self.pack_row(self.conditions, [" Chamber ", " Throat ", " Exit "], start_col=1, sticky="e", pady=(0, 5), padx=3)
-        self.pack_row(self.conditions, ["Pressure (atm)"], start_col=0, row=1, sticky="w", padx=row_title_offset)
-        self.pack_row(self.conditions, ["Temperature (°C)"], start_col=0, row=2, sticky="w", padx=row_title_offset)
-        self.pack_row(self.conditions, ["Density (kg/m^3)"], start_col=0, row=3, sticky="w", padx=row_title_offset)
-        self.pack_row(self.conditions, ["Mach Number ()"], start_col=0, row=4, sticky="w", padx=row_title_offset)
-        self.pack_row(self.conditions, ["Velocity (m/s)"], start_col=0, row=5, sticky="w", padx=row_title_offset)
-
-        if new_outputs:
-            velocities = []
-            for sonic, mach in zip(new_outputs["sonicVelocity"], new_outputs["mach"]):
-                new_velocity = float(sonic) * float(mach)
-                velocities.append(f"{new_velocity:.0f}")
-            
-
-            def round_str(arr, n=0):
-                return list(map(lambda p : str(round(p, n)), arr))
-            
-            pressures = round_str(new_outputs["pressure"], 1)
-            temperature = round_str(new_outputs["temperature"], 0)
-            density = round_str(new_outputs["density"], 4)
-            mach = round_str(new_outputs["mach"], 2)
-            self.pack_row(self.conditions, pressures, start_col=1, row=1, sticky="e", padx=5)
-            self.pack_row(self.conditions, temperature, start_col=1, row=2, sticky="e", padx=5)
-            self.pack_row(self.conditions, density, start_col=1, row=3, sticky="e", padx=5)
-            self.pack_row(self.conditions, mach, start_col=1, row=4, sticky="e", padx=5)
-            self.pack_row(self.conditions, velocities, start_col=1, row=5, sticky="e", padx=5)
+    def repack_conditions(self):
+        """Update the content of the numerical outputs in a grid"""       
+        
+        precisions = [4, 3, 3, 3, 4]
+        for index, row_data in enumerate(self.conditions_data):
+            row_data = list_to_precision(row_data, precisions[index])
+            self.pack_row(row_data, row=index)
 
     def update_display(self, new_outputs):
-        self.cstar_display.update_value(new_outputs["cstar"], "m/s")
+        self.cstar_display.update_value(new_outputs["cstar"], new_outputs["cstar units"])
         self.CF_display.update_value(new_outputs["CF"])
-        self.Isp_display.update_value(new_outputs["Isp"], "s")
+        self.Isp_display.update_value(new_outputs["Isp"], new_outputs["isp units"])
 
-        self.conditions.destroy()
-        self.pack_conditions(new_outputs)
+        velocities = []
+        for sonic, mach in zip(new_outputs["sonicVelocity"], new_outputs["mach"]):
+            new_velocity = float(sonic) * float(mach)
+            velocities.append(new_velocity)
+        
+        pressures = new_outputs["pressure"]
+        temperature = new_outputs["temperature"]
+        density = new_outputs["density"]
+        mach = new_outputs["mach"]
+
+        for index, (data, input_units, display_units) in enumerate([
+                (pressures, new_outputs["pressure units"], self.pressure_units),
+                (temperature, new_outputs["temperature units"], self.temperature_units),
+                (density, new_outputs["density units"], self.density_units),
+                (mach, "", None),
+                (velocities, new_outputs["velocity units"], self.velocity_units)
+            ]):
+            if input_units != "":
+                data = list(map(lambda x : display_units.get_conversion(input_units, x), data))
+                
+            self.conditions_data[index] = data
+
+        self.repack_conditions()
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -236,36 +267,110 @@ class Outputs(tk.Frame):
         performance = tk.Frame(self)
         performance.pack()
 
-        self.cstar_display = LabeledOutputWithUnits(performance, prefix="Characteristic Velocity: ", help_func=CSTAR_WINDOW, uniform="outputs", unit_conversions={
-            "m/s": 1,
-            "ft/s": 3.28084,
-            "mph": 2.23694,
-            "kph": 3.6
-        }, precision=4)
+        self.cstar_display = LabeledOutputWithUnits(performance, prefix="Characteristic Velocity: ", help_func=CSTAR_WINDOW, uniform="outputs", unit_conversions=VELOCITY_UNITS, precision=4)
         self.cstar_display.pack()
         self.CF_display = LabeledOutput(performance, prefix="Nozzle Coefficient: ", help_func=CF_WINDOW, uniform="outputs", precision=3, numerical=True)
         self.CF_display.pack()
 
-        self.Isp_display = LabeledOutputWithUnits(performance, prefix="Specific Impulse: ", help_func=ISP_WINDOW, uniform="outputs", unit_conversions={
-            "s": 1,
-            "m/s": 9.81,
-            "ft/s": 32.2
-        }, precision=3)
+        self.Isp_display = LabeledOutputWithUnits(performance, prefix="Specific Impulse: ", help_func=ISP_WINDOW, uniform="outputs", unit_conversions=ISP_UNITS, precision=3)
         self.Isp_display.pack()
 
 
         self.conditions_label = tk.Label(self, text="Propulsion Conditions")
         self.conditions_label.configure(font=subtitle_font)
         self.conditions_label.pack(pady=(20, subtitle_offset))
-        self.pack_conditions()
+
+        self.conditions = tk.Frame(self)
+        self.conditions.pack()
+
+        # Refactor to have a separate array of all of the numbers, then display it in the numerical entries
+        row_title_offset = 5
+        tk.Label(self.conditions, text=" Chamber ").grid(column=1, row=0, sticky="e", pady=(0, 5), padx=3)
+        tk.Label(self.conditions, text=" Throat ").grid(column=2, row=0, sticky="e", pady=(0, 5), padx=3)
+        tk.Label(self.conditions, text=" Exit ").grid(column=3, row=0, sticky="e", pady=(0, 5), padx=3)
+        tk.Label(self.conditions, text="Pressure").grid(column=0, row=1, sticky="w", padx=row_title_offset)
+        tk.Label(self.conditions, text="Temperature").grid(column=0, row=2, sticky="w", padx=row_title_offset)
+        tk.Label(self.conditions, text="Density").grid(column=0, row=3, sticky="w", padx=row_title_offset)
+        tk.Label(self.conditions, text="Mach Number").grid(column=0, row=4, sticky="w", padx=row_title_offset)
+        tk.Label(self.conditions, text="Velocity").grid(column=0, row=5, sticky="w", padx=row_title_offset)
+
+        # five rows of three blanks
+        self.conditions_data = [[""] * 3] * 5
+        self.entries = []
+        for row_index in range(1, len(self.conditions_data) + 1):
+            self.entries.append([])
+            for column_index in range(1, len(self.conditions_data[0]) + 1):
+                entry = tk.Label(self.conditions) #, text=f"{row_index}: {column_index}")
+                entry.grid(row=row_index, column=column_index, sticky="e", padx=5)
+
+                self.entries[row_index - 1].append(entry)
+
+        def update_row_by_factor(row, factor, start_at=1):
+            # No need to update anything if there is no data
+            if "" in self.conditions_data[row]:
+                return
+            
+            self.conditions_data[row] = list(map(lambda x : str(float(x) * factor), self.conditions_data[row]))
+            self.repack_conditions()
+        
+        def update_row_for_temperature(row, prev_units: str, new_units: str):
+            # Hard-coding this because the unit conversions are already monstrous and this should be the last time
+            if "" in self.conditions_data[row]:
+                return
+            
+            unconversion = TEMPERATURE_UNITS[prev_units].get_unconverted
+            conversion = TEMPERATURE_UNITS[new_units].get_converted
+        
+            for index, value in enumerate(self.conditions_data[row]):
+                base = unconversion(value)
+
+                self.conditions_data[row][index] = conversion(base)
+
+            self.repack_conditions()
+
+
+        self.pressure_units = UnitsDropDown(self.conditions, PRESSURE_UNITS, lambda prev_units, new_units: update_row_by_factor(row=0, factor=PRESSURE_UNITS[new_units]/PRESSURE_UNITS[prev_units]))
+        self.pressure_units.grid(row=1, column=4, sticky="w")
+
+        self.temperature_units = UnitsDropDown(self.conditions, TEMPERATURE_UNITS, lambda prev_units, new_units: update_row_for_temperature(1, prev_units, new_units))
+        self.temperature_units.grid(row=2, column=4, sticky="w")
+
+        self.density_units = UnitsDropDown(self.conditions, DENSITY_UNITS, lambda prev_units, new_units: update_row_by_factor(row=2, factor=DENSITY_UNITS[new_units]/DENSITY_UNITS[prev_units]))
+        self.density_units.grid(row=3, column=4, sticky="w")
+
+        self.velocity_units = UnitsDropDown(self.conditions, VELOCITY_UNITS, lambda prev_units, new_units: update_row_by_factor(row=4, factor=VELOCITY_UNITS[new_units]/VELOCITY_UNITS[prev_units]))
+        self.velocity_units.grid(row=5, column=4, sticky="w")
+
+    def clear_conditions(self):
+        self.conditions_data = [[""] * 3] * 5
+        self.repack_conditions()
 
     def clear(self):
         self.Isp_display.clear()
         self.CF_display.clear()
         self.cstar_display.clear()
 
-        self.conditions.destroy()
-        self.pack_conditions()
+        self.clear_conditions()
+
+    def apply_units(self, selected_units):
+        self.cstar_display.output.units = selected_units["cstar output"]
+        self.Isp_display.output.units = selected_units["isp output"]
+        self.pressure_units.units = selected_units["pressure output"]
+        self.temperature_units.units = selected_units["temperature output"]
+        self.density_units.units = selected_units["density output"]
+        self.velocity_units.units = selected_units["velocity output"]
+    
+    def get_units(self) -> dict:
+        return {
+            "cstar output": self.cstar_display.output.units,
+            "isp output": self.Isp_display.output.units,
+            "pressure output": self.pressure_units.units,
+            "temperature output": self.temperature_units.units,
+            "density output": self.density_units.units,
+            "velocity output": self.velocity_units.units
+        }
+        
+
 
 filetypes = (
     ('CEA files', '*.inp'),
@@ -292,7 +397,9 @@ class Editor(tk.Frame):
         if self.unsaved:
             should_continue = messagebox.askokcancel("Erase Data?", "This will erase unsaved progress. Are you sure you want to continue?")
         
-        return should_continue
+            return should_continue
+        
+        return True
 
     def clear(self):
         self.inputs.clear()
@@ -466,6 +573,7 @@ class Editor(tk.Frame):
                     # For some reason the CEA file did not generate as expected
                     raise UnknownCEAException()
                 
+                outputs["cstar units"] = "m/s"
                 outputs["cstar"] = cstar.groups()[0]
                 outputs["CF"] = cf.groups()[0]
                 metric_Isp = metric_Isp.groups()[0]
@@ -473,6 +581,7 @@ class Editor(tk.Frame):
                 metric_Isp /= 9.81
                 # Divide by the acceleration of gravity to get it in seconds
                 outputs["Isp"] = str(metric_Isp)
+                outputs["isp units"] = "s"
 
                 def process_column(prefix, to_assign, conversion_func=lambda x : x):
                     values = re.search(f"{prefix}.*?(\d.*)\n", text).groups()[0]
@@ -502,11 +611,14 @@ class Editor(tk.Frame):
                             i += 1
 
                     values = list(map(conversion_func, values))
-                    # Convert from bar to atm
                     outputs[to_assign] = values
                 
-                process_column("P, BAR", "pressure", lambda pressure: pressure * 0.986923)
-                process_column("T, K", "temperature", lambda temperature: temperature - 273.15)
+                outputs["pressure units"] = "bar"
+                outputs["temperature units"] = "K"
+                outputs["density units"] = "kg/m^3"
+                outputs["velocity units"] = "m/s"
+                process_column("P, BAR", "pressure", lambda pressure: pressure)
+                process_column("T, K", "temperature", lambda temperature: temperature)
                 process_column("RHO, KG/CU M", "density")
                 process_column("MACH NUMBER", "mach")
                 process_column("SON VEL,M/SEC", "sonicVelocity")
@@ -525,7 +637,7 @@ class Editor(tk.Frame):
         # Regenerate the input file
         success = self.generate_file()
         if not success:
-            return
+            raise Exception("Could not generate data input file")
 
         to_run = self.current_file
         # I believe that this checks if it is using a relative path so that FCEA can reach it after the cwd change
@@ -568,13 +680,13 @@ class Editor(tk.Frame):
         self.set_current_file(self.default_temp_file)
         self.load_file(self.current_file_input)
         self.unsaved = True
+        self.load_units()
 
         menu = tk.Menu(self)
         root.config(menu=menu)
         file_menu = tk.Menu(menu, tearoff=0)
 
         menu.add_cascade(label="File", menu=file_menu, underline=0)
-        # Most of this stuff is just changing file names
         file_menu.add_command(label="New", command=self.new_file, underline=0, accelerator="Ctrl+N")
         self.bind_all("<Control-n>", lambda event : self.new_file())
         file_menu.add_command(label="Open", command=self.prompt_and_load_file, underline=0, accelerator="Ctrl+O")
@@ -584,8 +696,8 @@ class Editor(tk.Frame):
         file_menu.add_command(label="Save As", command=self.save_as_current_file, underline=5, accelerator="Ctrl+Shift+S")        
         self.bind_all("<Control-S>", lambda event : self.save_as_current_file())       
         file_menu.add_separator()
-        file_menu.add_command(label="Exit", command=root.quit, underline=1, accelerator="Ctrl+Shift+Q")
-        self.bind_all("<Control-Q>", lambda event : root.quit())
+        file_menu.add_command(label="Exit", command=on_exit, underline=1, accelerator="Ctrl+Shift+Q")
+        self.bind_all("<Control-Q>", lambda event : on_exit())# 
 
         run_menu = tk.Menu(menu, tearoff=0)
         menu.add_cascade(label="Run", menu=run_menu, underline=0)
@@ -607,7 +719,28 @@ class Editor(tk.Frame):
         help_menu.add_command(label="Isp", command=ISP_WINDOW)
 
         # Add some units options in another dropdown here; maybe have some set everything imperial and metric functions. Would kind of suck because I have to make sure that everything that is already put in gets converted correctly
-        
+    
+    def load_units(self):
+        """Call on program load"""
+        try:
+            with open("./units.pkl", "ab+") as f: 
+                f.seek(0)
+                units = pickle.load(f)
+        except EOFError: # if file is empty
+            print("Units pickle is empty, ignoring")
+        else:
+            self.apply_units(units)
+
+    def apply_units(self, selected_units):
+        self.inputs.apply_units(selected_units)
+        self.outputs.apply_units(selected_units)
+    
+    def save_units(self):
+        """Call on program exit"""
+        units = { **self.inputs.get_units(), **self.outputs.get_units() }
+
+        with open("./units.pkl", "wb") as f: 
+            pickle.dump(units, f)
     
     def set_current_file(self, new_path: str, has_been_saved=True):
         self.current_file = new_path
@@ -622,6 +755,15 @@ class Editor(tk.Frame):
         return f"{self.current_file}.out"
 
 
+def on_exit():
+    print("Attempting to exit")
+    try:
+        # Not calling
+        editor.save_units()
+    except Exception as e:
+        print(traceback.format_exc())
+    finally:
+        root.quit()
 
 if __name__ == "__main__":
     root = tk.Tk()
@@ -632,10 +774,19 @@ if __name__ == "__main__":
     editor = Editor(root)
     editor.pack(fill="both", expand=True)
 
+    
+    selected_units = {
+        "pressure input": "bar",
+    }
+
+    def apply_selected_units():
+        editor.apply_units(selected_units)
+
     root.state("zoomed")
 
     root.bind("<<Document-Altered>>", lambda *args: editor.set_unsaved())
 
+    root.protocol("WM_DELETE_WINDOW", on_exit)
     root.mainloop()
 
     

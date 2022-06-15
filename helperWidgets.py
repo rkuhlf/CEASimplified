@@ -2,10 +2,24 @@ import tkinter as tk
 from tkinter import ttk
 from typing import Dict
 
-from matplotlib.pyplot import text
 from toPrecision import std_notation
 
 from images import images
+
+
+# Probably should have made some kind of Unit class from which everything inherits and has get_converted and get_unconverted
+class MultiplyAndAdd:
+    def __init__(self, multiplier=1, add=0) -> None:
+        self.multiplier = multiplier
+        self.add = add
+    
+    def get_converted(self, value: float) -> float:
+        return value * self.multiplier + self.add
+        
+    
+    def get_unconverted(self, value: float) -> float:
+        return (value - self.add) / self.multiplier
+
 
 def validate_to_float(text: str, empty=True):
     """Empty is what to return if it is empty"""
@@ -52,12 +66,65 @@ class NumericalEntry(tk.Entry):
         
         return super().insert(index, string)
 
+    @property
+    def value(self) -> str:
+        return self.text_variable.get()
+    
+    @value.setter
+    def value(self, v: str):
+        self.text_variable.set(v)
+
+
+class UnitsDropDown(tk.Frame):
+    def __init__(self, parent, unit_conversions: Dict[str, float]={}, handle_units_change=lambda : ..., **kwargs):
+        super().__init__(parent, **kwargs)
+        self.handle_units_change = handle_units_change
+        self.unit_conversions = unit_conversions
+
+        self.units_variable = tk.StringVar(parent)
+        self.units_variable.set(list(unit_conversions.keys())[0])
+        self.units_input = ttk.OptionMenu(self, self.units_variable, self.units_variable.get(), *list(unit_conversions.keys()), command=self.handle_units_change_wrapper)
+        self.units_input.pack(side=tk.LEFT)
+
+        self.previous_units = self.units
+    
+    @property
+    def units(self):
+        return self.units_variable.get()
+    
+    @units.setter
+    def units(self, new_units):
+        self.units_variable.set(new_units)
+        self.handle_units_change_wrapper()
+    
+    def handle_units_change_wrapper(self, _event=...):
+        self.handle_units_change(self.previous_units, self.units)
+
+        self.previous_units = self.units
+    
+    def get_conversion(self, old_units, value) -> float:
+        """Returns the conversion factor to match the drop down"""
+        old_conversion = self.unit_conversions.get(old_units)
+
+        if isinstance(old_conversion, MultiplyAndAdd):
+            base = old_conversion.get_unconverted(value)
+        else:
+            base = value / old_conversion
+        
+        new_conversion = self.unit_conversions.get(self.units)
+        if isinstance(new_conversion, MultiplyAndAdd):
+            return new_conversion.get_converted(base)
+        else:
+            return base * new_conversion
+        
+
 class NumericalEntryWithUnits(tk.Frame):
-    def __init__(self, parent, unit_conversions: Dict[str, float]={}, precision=2, change_on_update=True, **kwargs) -> None:
+    def __init__(self, parent, unit_conversions: Dict[str, float]={}, precision=2, change_on_update=True, on_units_update=lambda *args :..., **kwargs) -> None:
         """Additional keyword arguments are passed to the entry. If no units are passed, it will create an empty dropdown"""
         self.precision = precision
         super().__init__(parent, **kwargs)
 
+        self.on_units_update = on_units_update
         self.change_on_update = change_on_update
         self.unit_conversions = unit_conversions
         
@@ -65,12 +132,8 @@ class NumericalEntryWithUnits(tk.Frame):
         self.entry = NumericalEntry(self, precision=precision, textvariable=self.text_variable, **kwargs)
         self.entry.pack(side=tk.LEFT)
 
-        self.units_variable = tk.StringVar(parent)
-        self.units_variable.set(list(unit_conversions.keys())[0])
-        self.units_input = ttk.OptionMenu(self, self.units_variable, self.units_variable.get(), *list(unit_conversions.keys()), command=self.handle_unit_change)
-        self.units_input.pack(side=tk.LEFT)
-
-        self.previous_units = self.units
+        self.units_dropdown = UnitsDropDown(self, unit_conversions, handle_units_change=self.handle_units_change)
+        self.units_dropdown.pack(side=tk.LEFT)
     
     @property
     def value(self) -> str:
@@ -93,13 +156,22 @@ class NumericalEntryWithUnits(tk.Frame):
     
     @property
     def units(self):
-        return self.units_variable.get()
+        return self.units_dropdown.units
     
-    def handle_unit_change(self, new_units):
-        if self.change_on_update:
-            self.value = float(self.value) / self.unit_conversions.get(self.previous_units) * self.unit_conversions.get(new_units)
+    @units.setter
+    def units(self, new_units):
+        self.units_dropdown.units = new_units
 
-            self.previous_units = self.units
+
+    def handle_units_change(self, old_units, new_units):
+        self.on_units_update(old_units, new_units)
+
+        if self.value.strip() == "":
+            return
+        
+        if self.change_on_update:
+            self.value = float(self.value) / self.unit_conversions.get(old_units) * self.unit_conversions.get(new_units)
+
         
         # No need to update the saved state, since units are only a visual thing; they are all stored in CEA units
 
@@ -201,9 +273,16 @@ class LabeledOutputWithUnits(LabeledOutput):
 
         return entry_frame
     
-    def update_value(self, new_value: str, units: str) -> None:
+    def update_value(self, new_value: str, units: str="") -> None:
         """Takes a value and the units that it is in. Will be converted to the units that the label is in."""
-        
+        # Required because this is how the clear functionality does it
+        if units == "" and new_value == "":
+            self.entry.configure(state="normal")
+            self.output.value = new_value
+            self.entry.configure(state="readonly")
+            return
+
+
         if validate_to_float(new_value, empty=False):
             new_value = float(new_value)
             new_value /= self.unit_conversions[units]
@@ -222,11 +301,11 @@ class LabeledOutputWithUnits(LabeledOutput):
     @property
     def entry(self) -> NumericalEntryWithUnits:
         return self.output.entry
-        
+            
 
 class LabeledInputWithUnits(LabeledInput):
     def create_input(self, parent) -> NumericalEntry:
-        self.entry_with_units = NumericalEntryWithUnits(parent, self.unit_conversions, precision=None, width=8, change_on_update=False)
+        self.entry_with_units = NumericalEntryWithUnits(parent, self.unit_conversions, precision=None, width=8, change_on_update=True)
         self.entry_with_units.pack(side=tk.LEFT)
 
         return self.entry_with_units.entry
