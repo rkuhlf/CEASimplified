@@ -1,4 +1,4 @@
 # CEASimplified
-tkinter wrapper for NASA CEA, aimed at reducing complexity and helping beginners.
+tkinter wrapper for NASA CEA, aimed at reducing complexity and helping beginners. NASA originally wrote the Chemical Equilibrium software in Fortran in the 60s and continued developing it to where it lives online now at [CEARun](https://cearun.grc.nasa.gov/intro.html#:~:text=The%20online%20program%20CEARUN%20has,now%20the%20Glenn%20Research%20Center). I still wasn't a huge fan of the interface, so I built this app to make everything look a little nicer.
 
 You can download it at [Source Forge](https://sourceforge.net/projects/ceasimplified/), or just clone the project and run it yourself. Just a heads up, the .exe file will tell you it is from an unverified publisher. That's because I didn't pay for verification. Most of the code is in main.py, so that's where I would start if you want to verify it.
